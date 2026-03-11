@@ -20,7 +20,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from functools import wraps
 
-from flask import Flask, render_template, request, jsonify, abort, redirect, url_for, session
+from flask import Flask, render_template, request, jsonify, abort, redirect, url_for, session, Response
 from flask_socketio import SocketIO, emit
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -165,6 +165,7 @@ saved_settings = db.get_all_settings()
 app_state = {
     "selected_video": None,
     "is_processing": False,
+    "cancel_requested": False,
     "api_key": os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY") or saved_settings.get("gemini_api_key", ""),
     "progress": 0,
     "progress_text": "Aguardando início..."
@@ -446,6 +447,12 @@ def get_status():
     })
 
 
+@app.route('/api/health')
+def health_check():
+    """Health check para monitoramento e proxies (não exige login)."""
+    return jsonify({"status": "ok", "timestamp": datetime.now().isoformat()})
+
+
 # ==================== ROTAS DE CONFIGURAÇÕES (PERSISTENTES) ====================
 
 @app.route('/api/settings', methods=['GET'])
@@ -471,12 +478,24 @@ def save_settings():
     data = request.json or {}
     
     allowed_keys = ['workspace_dir', 'whisper_model', 'cut_method', 'language', 'use_ai_correction']
+    updated_keys = []
+
+    # API key: tratamento separado para não logar o valor
+    if 'gemini_api_key' in data:
+        api_key = (data.get('gemini_api_key') or '').strip()
+        if api_key:
+            if len(api_key) > 200 or not re.match(r'^[A-Za-z0-9_-]+$', api_key):
+                return jsonify({"success": False, "error": "API key inválida"}), 400
+            db.set_setting('gemini_api_key', api_key)
+            app_state["api_key"] = api_key
+            os.environ["GEMINI_API_KEY"] = api_key
+        updated_keys.append('gemini_api_key')
     
     for key in allowed_keys:
         if key in data:
             value = str(data[key])
             db.set_setting(key, value)
-            
+            updated_keys.append(key)
             # Atualiza configurações em memória
             if key in default_settings:
                 if key == 'use_ai_correction':
@@ -484,7 +503,12 @@ def save_settings():
                 else:
                     default_settings[key] = value
     
-    db.add_log("Sistema", "settings_update", "success", f"Configurações atualizadas: {list(data.keys())}")
+    if updated_keys:
+        log_keys = [k for k in updated_keys if k != 'gemini_api_key']
+        if log_keys:
+            db.add_log("Sistema", "settings_update", "success", f"Configurações atualizadas: {log_keys}")
+        else:
+            db.add_log("Sistema", "settings_update", "success", "API key atualizada")
     return jsonify({"success": True, "message": "Configurações salvas"})
 
 
@@ -950,6 +974,10 @@ def preview_file(file_path):
 PROJECT_DIR = Path(__file__).parent.resolve()
 THUMBNAIL_CACHE_DIR = PROJECT_DIR / '.thumbnails'
 
+# Pasta de fontes customizadas (upload do usuário)
+FONTS_DIR = PROJECT_DIR / 'fonts'
+ALLOWED_FONT_EXTENSIONS = {'.ttf', '.otf', '.woff', '.woff2'}
+
 
 @app.route('/api/files/thumbnail/<path:file_path>')
 @api_login_required
@@ -1024,8 +1052,59 @@ def get_thumbnail(file_path):
     except Exception as e:
         print(f"Erro ao gerar thumbnail: {e}")
     
-    # Se tudo falhar, retorna placeholder
-    abort(404)
+    # Fallback: placeholder SVG quando FFmpeg não está disponível ou falha
+    placeholder_svg = '''<svg xmlns="http://www.w3.org/2000/svg" width="320" height="180" viewBox="0 0 320 180">
+        <rect width="320" height="180" fill="#1a1a2e"/>
+        <path d="M120 65v50l40-25-40-25z" fill="#6b6b80"/>
+        <text x="160" y="155" text-anchor="middle" fill="#6b6b80" font-size="12" font-family="sans-serif">Vídeo</text>
+    </svg>'''
+    return Response(placeholder_svg, mimetype='image/svg+xml')
+
+
+@app.route('/api/fonts/list', methods=['GET'])
+@api_login_required
+def list_fonts():
+    """Lista fontes do sistema (fixas) e fontes customizadas (pasta fonts/)"""
+    custom = []
+    try:
+        FONTS_DIR.mkdir(exist_ok=True)
+        for f in sorted(FONTS_DIR.iterdir()):
+            if f.is_file() and f.suffix.lower() in ALLOWED_FONT_EXTENSIONS:
+                # Nome para exibição: nome do arquivo sem extensão
+                name = f.stem
+                custom.append({"name": name, "path": str(f)})
+    except Exception:
+        pass
+    return jsonify({
+        "success": True,
+        "custom": custom
+    })
+
+
+@app.route('/api/fonts/upload', methods=['POST'])
+@api_login_required
+def upload_font():
+    """Faz upload de uma fonte e salva em fonts/. Retorna o nome da fonte para usar na lista."""
+    if 'font' not in request.files and 'file' not in request.files:
+        return jsonify({"success": False, "error": "Nenhum arquivo enviado"}), 400
+    file = request.files.get('font') or request.files.get('file')
+    if not file or file.filename == '':
+        return jsonify({"success": False, "error": "Arquivo inválido"}), 400
+    ext = Path(file.filename).suffix.lower()
+    if ext not in ALLOWED_FONT_EXTENSIONS:
+        return jsonify({"success": False, "error": f"Extensão não permitida. Use: {', '.join(ALLOWED_FONT_EXTENSIONS)}"}), 400
+    safe_name = sanitize_filename(file.filename)
+    if not safe_name:
+        return jsonify({"success": False, "error": "Nome de arquivo inválido"}), 400
+    try:
+        FONTS_DIR.mkdir(exist_ok=True)
+        dest = FONTS_DIR / safe_name
+        file.save(str(dest))
+        # Nome para uso no ASS: nome sem extensão (font family)
+        font_display_name = Path(safe_name).stem
+        return jsonify({"success": True, "font_name": font_display_name, "filename": safe_name})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
 
 
 @app.route('/api/select_video', methods=['POST'])
@@ -1051,6 +1130,48 @@ def select_video():
     else:
         log_security_event("INVALID_VIDEO_PATH", f"Caminho: {video_path}, Erro: {result}")
         return jsonify({"success": False, "error": result}), 400
+
+
+@app.route('/api/clear_selection', methods=['POST'])
+@api_login_required
+def clear_selection():
+    """Remove a seleção de vídeo atual"""
+    app_state["selected_video"] = None
+    return jsonify({"success": True, "message": "Seleção removida"})
+
+
+@app.route('/api/validate_api_key', methods=['POST'])
+@api_login_required
+def validate_api_key():
+    """
+    Valida se a API key do Gemini está funcionando (chamada mínima ao modelo).
+    Usa a key atual ou a enviada no body.
+    """
+    data = request.json or {}
+    api_key = data.get('api_key', '').strip() or app_state.get("api_key", "")
+    
+    if not api_key:
+        return jsonify({"valid": False, "error": "Nenhuma API key configurada"}), 400
+    
+    try:
+        import google.generativeai as genai
+    except ImportError:
+        return jsonify({"valid": False, "error": "Biblioteca google-generativeai não instalada"}), 400
+
+    try:
+        genai.configure(api_key=api_key)
+        model = genai.GenerativeModel("gemini-2.5-flash")
+        # Chamada mínima para validar a key
+        response = model.generate_content("Responda apenas: ok", generation_config={"max_output_tokens": 10})
+        if response and response.text:
+            return jsonify({"valid": True, "message": "API key válida"})
+    except Exception as e:
+        err_msg = str(e).strip()
+        if "API_KEY_INVALID" in err_msg or "403" in err_msg or "401" in err_msg:
+            return jsonify({"valid": False, "error": "API key inválida ou sem permissão"}), 400
+        return jsonify({"valid": False, "error": err_msg[:200]}), 400
+    
+    return jsonify({"valid": False, "error": "Resposta inesperada"}), 400
 
 
 @app.route('/api/set_api_key', methods=['POST'])
@@ -1093,6 +1214,19 @@ def set_api_key():
     return jsonify({"success": True})
 
 
+@app.route('/api/reveal_api_key', methods=['GET'])
+@api_login_required
+def reveal_api_key():
+    """
+    Retorna a API key atual apenas para exibição/cópia no modal de edição.
+    Uso restrito à interface autenticada.
+    """
+    key = app_state.get("api_key") or db.get_setting("gemini_api_key") or ""
+    if not key:
+        return jsonify({"api_key": None})
+    return jsonify({"api_key": key})
+
+
 @app.route('/api/process/remove_silence', methods=['POST'])
 @api_login_required
 def process_remove_silence():
@@ -1107,9 +1241,11 @@ def process_remove_silence():
     method = data.get('method', 'speech')
     padding = float(data.get('padding', 0.25))
     min_silence = float(data.get('min_silence', 0.5))
+    word_threshold = float(data.get('word_threshold', 0.25))
     
     def process():
         video_path = app_state["selected_video"]
+        app_state["cancel_requested"] = False
         try:
             app_state["is_processing"] = True
             emit_log("Iniciando remoção de silêncio...", "info")
@@ -1118,14 +1254,19 @@ def process_remove_silence():
             from remove_silence import remover_silencio
             
             output_path = get_output_path(video_path, '_cut')
+            get_cancelled = lambda: app_state.get("cancel_requested", False)
             
             emit_progress("Analisando áudio...", 0.3)
             emit_log(f"Usando método de corte: {method.upper()} (Margem: {padding}s, Silêncio min: {min_silence}s)", "info")
             
             start_time = time.time()
-            success = remover_silencio(video_path, output_path, method=method, min_duration=min_silence, padding=padding)
+            success = remover_silencio(video_path, output_path, method=method, min_duration=min_silence, padding=padding, word_threshold=word_threshold, get_cancelled=get_cancelled)
             duration = time.time() - start_time
             
+            if app_state.get("cancel_requested"):
+                emit_log("Processamento cancelado pelo usuário.", "warning")
+                socketio.emit('process_complete', {'success': False, 'error': 'Cancelado pelo usuário'})
+                return
             if success:
                 emit_progress("Concluído!", 1.0)
                 emit_log(f"✅ Vídeo cortado salvo em: {os.path.basename(output_path)}", "success")
@@ -1151,6 +1292,7 @@ def process_remove_silence():
             socketio.emit('process_complete', {'success': False, 'error': str(e)})
         finally:
             app_state["is_processing"] = False
+            app_state["cancel_requested"] = False
             emit_progress("Aguardando início...", 0)
     
     threading.Thread(target=process, daemon=True).start()
@@ -1162,11 +1304,14 @@ def process_remove_silence():
 def preview_subtitle():
     """Gera um preview da legenda com as configurações atuais"""
     data = request.json or {}
-    
-    if not app_state["selected_video"]:
+    raw_path = data.get("video_path") or app_state.get("selected_video")
+    if not raw_path:
         return jsonify({"success": False, "error": "Nenhum vídeo selecionado"}), 400
-        
-    video_path = app_state["selected_video"]
+    raw_path = str(raw_path).strip()
+    is_valid, video_path = validate_video_path(raw_path)
+    if not is_valid:
+        return jsonify({"success": False, "error": str(video_path)}), 400
+    video_path = str(video_path)
     
     # Configurações de estilo
     highlight_color = data.get('highlight_color')
@@ -1176,6 +1321,12 @@ def preview_subtitle():
     outline_width = float(data.get('outline_width', 1.5))
     font_name = data.get('font_name', 'Prohibition')
     font_size = float(data.get('font_size', 10))
+    sub_x_percent = data.get('sub_x_percent')
+    sub_y_percent = data.get('sub_y_percent')
+    if sub_x_percent is not None:
+        sub_x_percent = float(sub_x_percent)
+    if sub_y_percent is not None:
+        sub_y_percent = float(sub_y_percent)
     
     try:
         from auto_caption import gerar_ass_capcut
@@ -1183,7 +1334,6 @@ def preview_subtitle():
         from flask import send_file
         
         # 1. Gera thumbnail temporária (ou usa cache)
-        # Reusa lógica de cache de thumbnails
         THUMBNAIL_CACHE_DIR.mkdir(exist_ok=True)
         import hashlib
         file_stat = Path(video_path).stat()
@@ -1194,21 +1344,27 @@ def preview_subtitle():
         if not thumb_path.exists():
             # Gera thumbnail
             cmd = [
-                'ffmpeg', '-i', video_path, '-ss', '00:00:05', 
+                'ffmpeg', '-i', video_path, '-ss', '00:00:05',
                 '-vframes', '1', '-vf', 'scale=640:-1', '-q:v', '3', '-y', str(thumb_path)
             ]
-            subprocess.run(cmd, capture_output=True, check=False)
-            
-        if not thumb_path.exists():
-             return jsonify({"success": False, "error": "Falha ao gerar base para preview"}), 500
+            result = subprocess.run(cmd, capture_output=True, check=False, timeout=15)
+            if not thumb_path.exists():
+                err = (result.stderr or b'').decode('utf-8', errors='ignore').strip()
+                if not err:
+                    err = "FFmpeg não retornou saída. Verifique se o FFmpeg está instalado e no PATH."
+                return jsonify({
+                    "success": False,
+                    "error": "Não foi possível extrair frame do vídeo. " + (err[:200] if len(err) > 200 else err)
+                }), 500
              
         # 2. Cria ASS de preview
         preview_ass = THUMBNAIL_CACHE_DIR / f"preview_{thumb_hash}.ass"
         preview_img = THUMBNAIL_CACHE_DIR / f"preview_{thumb_hash}.jpg"
         
-        # Mock de segmentos para gerar o ASS
-        # "PREVIEW DA LEGENDA"
+        # Mock de segmentos para gerar o ASS (precisa de "start"/"end" no segmento para gerar_ass_capcut)
         mock_segments = [{
+            "start": 0.0,
+            "end": 1.5,
             "words": [
                 {"word": "PREVIEW", "start": 0.0, "end": 0.5},
                 {"word": "DA", "start": 0.5, "end": 0.8},
@@ -1217,58 +1373,53 @@ def preview_subtitle():
         }]
         
         gerar_ass_capcut(
-            mock_segments, 
-            str(preview_ass), 
+            mock_segments,
+            str(preview_ass),
             highlight_color=highlight_color,
             text_color=text_color,
             outline_color=outline_color,
             highlight_width=highlight_width,
             outline_width=outline_width,
             font_name=font_name,
-            font_size=font_size
+            font_size=font_size,
+            sub_x_percent=sub_x_percent,
+            sub_y_percent=sub_y_percent,
+            play_res_x=640,
+            play_res_y=360
         )
-        
-        # 3. Queima a legenda na imagem
-        # ffmpeg -i thumb.jpg -vf "subtitles=preview.ass" -y preview.jpg
-        # Precisamos normalizar o caminho do ASS para o ffmpeg
-        ass_norm = str(preview_ass).replace("\\", "/")
-        
-        # Definimos um tempo fictício onde a legenda aparece (ex: 0.2s) para renderizar o frame correto?
-        # Na verdade, o ASS tem tempos absolutos. O ffmpeg aplicaria o ASS como se a imagem fosse um vídeo começando em 0.
-        # Nossos segmentos começam em 0.0.
-        # Precisamos dizer ao ffmpeg para renderizar o frame em um tempo específico onde a legenda existe.
-        # Como é uma imagem estática, o filtro subtitles aplica no timestamp 0 por padrão se não animado?
-        # O filtro subtitles assume o tempo do vídeo. Sendo imagem, é um stream de 1 frame (ou loop).
-        # Vamos tentar aplicar direto.
-        
-        # Para garantir que a legenda apareça (ela tem tempos definidos), vamos forçar o timestamp do filtro
-        # Mas gerar_ass_capcut define tempos. "PREVIEW" (0-0.5s), "DA" (0.5-0.8), "LEGENDA" (0.8-1.5).
-        # O ideal é pegar um frame onde "LEGENDA" (destaque) esteja visível ou algo assim.
-        # O gerar_ass_capcut itera palavra por palavra e gera eventos.
-        # Vamos simplificar: vamos gerar um ASS onde todas as palavras aparecem ao mesmo tempo ou 
-        # ajustar o tempo para cobrir o "instante" que o ffmpeg vai renderizar.
-        
-        # Melhor: Vamos usar apenas "PREVIEW" como highlight para testar, no tempo 0.
-        
-        cmd_burn = [
-            'ffmpeg', '-y',
-            '-loop', '1', '-i', str(thumb_path), # Loop image input
-            '-vf', f"subtitles='{ass_norm}'",
-            '-t', '0.1', # Duração curta
-            '-vframes', '1', # Apenas 1 frame
-            str(preview_img)
-        ]
-        
-        # OBS: O filtro subtitles com imagem estática pode ser chato com tempos.
-        # Uma alternativa é gerar o ASS com tempo 00:00:00 -> 00:00:10 e renderizar o frame 0.
-        # O mock acima começa em 0.0. A primeira palavra "PREVIEW" será highlight.
-        
-        subprocess.run(cmd_burn, capture_output=True, check=True)
-        
-        if preview_img.exists():
+
+        # 3. Queima a legenda na imagem (frame do vídeo + ASS)
+        # Caminho do ASS em temp sem espaços para o filtro do ffmpeg não quebrar
+        import tempfile
+        import shutil
+        with tempfile.NamedTemporaryFile(suffix='.ass', delete=False) as fass:
+            ass_temp = fass.name
+        shutil.copy2(str(preview_ass), ass_temp)
+        try:
+            # Path com / para o filtro (evita escape de \ no Windows)
+            ass_for_filter = ass_temp.replace("\\", "/")
+            # -loop 1: imagem vira "vídeo"; -t 0.1: frame no tempo 0 (legenda visível)
+            cmd_burn = [
+                'ffmpeg', '-y',
+                '-loop', '1', '-i', str(thumb_path),
+                '-vf', f"subtitles='{ass_for_filter}'",
+                '-t', '0.1',
+                '-vframes', '1',
+                str(preview_img)
+            ]
+            result = subprocess.run(cmd_burn, capture_output=True, check=False, timeout=15)
+            if not preview_img.exists():
+                err = (result.stderr or b'').decode('utf-8', errors='ignore').strip()
+                return jsonify({
+                    "success": False,
+                    "error": "Não foi possível queimar a legenda na imagem. " + (err[-400:] if len(err) > 400 else err)
+                }), 500
             return send_file(str(preview_img), mimetype='image/jpeg')
-        else:
-            return jsonify({"success": False, "error": "Erro ao gerar imagem de preview"}), 500
+        finally:
+            try:
+                Path(ass_temp).unlink(missing_ok=True)
+            except Exception:
+                pass
 
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
@@ -1301,6 +1452,7 @@ def process_add_subtitles():
     
     def process():
         video_path = app_state["selected_video"]
+        app_state["cancel_requested"] = False
         try:
             app_state["is_processing"] = True
             emit_log("Iniciando processo de legendagem...", "info")
@@ -1361,6 +1513,7 @@ def process_add_subtitles():
             socketio.emit('process_complete', {'success': False, 'error': str(e)})
         finally:
             app_state["is_processing"] = False
+            app_state["cancel_requested"] = False
             emit_progress("Aguardando início...", 0)
     
     threading.Thread(target=process, daemon=True).start()
@@ -1512,6 +1665,7 @@ def process_full():
     use_ai = data.get('use_ai', True)
     padding = float(data.get('padding', 0.25))
     min_silence = float(data.get('min_silence', 0.5))
+    word_threshold = float(data.get('word_threshold', 0.25))
     
     # Configurações de estilo
     highlight_color = data.get('highlight_color')
@@ -1524,6 +1678,7 @@ def process_full():
     
     def process():
         video_path = app_state["selected_video"]
+        app_state["cancel_requested"] = False
         start_time = time.time()
         
         try:
@@ -1534,12 +1689,19 @@ def process_full():
             from remove_silence import remover_silencio
             from auto_caption import processar_legenda_completo
             
+            get_cancelled = lambda: app_state.get("cancel_requested", False)
+            
             # Passo 1: Cortar silêncio
             emit_log(f"📌 Passo 1/2: Removendo silêncio (Margem: {padding}s)...", "info")
             emit_progress("Analisando áudio...", 0.2)
             
             cut_path = get_output_path(video_path, '_cut')
-            success = remover_silencio(video_path, cut_path, method=cut_method, min_duration=min_silence, padding=padding)
+            success = remover_silencio(video_path, cut_path, method=cut_method, min_duration=min_silence, padding=padding, word_threshold=word_threshold, get_cancelled=get_cancelled)
+            
+            if get_cancelled():
+                emit_log("Processamento cancelado pelo usuário.", "warning")
+                socketio.emit('process_complete', {'success': False, 'error': 'Cancelado pelo usuário'})
+                return
             
             video_to_caption = cut_path if success else video_path
             
@@ -1588,10 +1750,21 @@ def process_full():
             socketio.emit('process_complete', {'success': False, 'error': str(e)})
         finally:
             app_state["is_processing"] = False
+            app_state["cancel_requested"] = False
             emit_progress("Aguardando início...", 0)
     
     threading.Thread(target=process, daemon=True).start()
     return jsonify({"success": True, "message": "Processamento iniciado"})
+
+
+@app.route('/api/process/cancel', methods=['POST'])
+@api_login_required
+def process_cancel():
+    """Sinaliza cancelamento: a thread em execução deve parar (get_cancelled) e o estado é limpo."""
+    app_state["cancel_requested"] = True
+    app_state["is_processing"] = False
+    emit_progress("Aguardando início...", 0)
+    return jsonify({"success": True, "message": "Processamento cancelado"})
 
 
 # ==================== SOCKETIO EVENTS ====================

@@ -178,16 +178,112 @@
         }
         
         /* ========== SIDEBAR ========== */
+        :root {
+            --sidebar-width: 300px;
+        }
+        
+        .sidebar-wrapper {
+            position: fixed;
+            left: 0;
+            top: 0;
+            height: 100vh;
+            width: var(--sidebar-width);
+            min-width: 0;
+            transition: width 0.2s ease;
+            z-index: 100;
+            display: flex;
+            flex-shrink: 0;
+            flex-direction: row;
+        }
+        
+        .sidebar-wrapper.collapsed {
+            width: 44px;
+            background: var(--bg-primary);
+            border-right: 1px solid var(--border-color);
+        }
+        
+        .sidebar-wrapper.collapsed .sidebar {
+            opacity: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+        
+        .sidebar-wrapper.collapsed .sidebar-resize-handle {
+            display: none;
+        }
+        
+        /* Botão acordeão na parte superior quando a sidebar está recolhida */
+        .sidebar-wrapper.collapsed .sidebar-toggle-btn {
+            right: auto;
+            left: 4px;
+            top: 16px;
+            transform: none;
+            width: 36px;
+            height: 36px;
+            opacity: 1;
+            pointer-events: auto;
+        }
+        
+        .sidebar-wrapper.collapsed:hover .sidebar-toggle-btn {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+        }
+        
+        .sidebar-toggle-btn {
+            position: absolute;
+            right: 8px;
+            top: 16px;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            border-radius: 8px;
+            cursor: pointer;
+            z-index: 10;
+            transition: background 0.2s, color 0.2s, opacity 0.2s;
+        }
+        
+        .sidebar-toggle-btn:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+        }
+        
+        .sidebar-toggle-btn:focus {
+            outline: none;
+        }
+        
+        .sidebar-resize-handle {
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 6px;
+            cursor: ew-resize;
+            z-index: 5;
+        }
+        
+        .sidebar-resize-handle:hover,
+        .sidebar-resize-handle.resizing {
+            background: rgba(0, 245, 212, 0.15);
+        }
+        
         .sidebar {
-            width: 300px;
+            position: relative;
+            width: 100%;
+            min-width: 0;
             background: var(--bg-primary);
             border-right: 1px solid var(--border-color);
             padding: 24px;
+            padding-top: 52px;
             display: flex;
             flex-direction: column;
-            position: fixed;
             height: 100vh;
             overflow-y: auto;
+            transition: opacity 0.2s ease;
         }
         
         .logo {
@@ -267,6 +363,23 @@
         .selected-video.has-video .value {
             color: var(--accent-success);
         }
+
+        .clear-selection-btn {
+            margin-top: 10px;
+            padding: 6px 12px;
+            font-size: 12px;
+            background: var(--bg-hover);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s;
+        }
+        .clear-selection-btn:hover {
+            background: var(--accent-error);
+            color: #fff;
+            border-color: var(--accent-error);
+        }
         
         /* Configurações */
         .config-group {
@@ -302,6 +415,59 @@
             outline: none;
             border-color: var(--accent-cyan);
             box-shadow: 0 0 0 3px rgba(0, 245, 212, 0.1);
+        }
+        
+        .preset-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+        .preset-btn {
+            flex: 1;
+            min-width: 0;
+            padding: 8px 6px;
+            font-size: 11px;
+            font-weight: 500;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: background 0.2s, border-color 0.2s, color 0.2s;
+        }
+        .preset-btn:hover {
+            background: var(--bg-hover);
+            border-color: var(--accent-purple);
+        }
+        .preset-btn.preset-active {
+            background: var(--accent-cyan);
+            border-color: var(--accent-cyan);
+            color: #0d1f1e;
+        }
+        .cut-scale {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 10px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+        .cut-scale .scale-line {
+            flex: 1;
+            margin: 0 8px;
+            text-align: center;
+            letter-spacing: 2px;
+            opacity: 0.7;
+        }
+        .cut-preview-text {
+            font-size: 11px;
+            color: var(--text-secondary);
+            line-height: 1.4;
+            padding: 8px 10px;
+            background: var(--bg-secondary);
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
         }
         
         /* Switch Toggle */
@@ -384,6 +550,11 @@
         
         .api-status.not-configured {
             color: var(--accent-error);
+        }
+        
+        .modal-btn-icon:hover {
+            background: var(--bg-hover) !important;
+            color: var(--accent-cyan) !important;
         }
         
         .api-btn {
@@ -674,6 +845,38 @@
         .explorer-empty .empty-icon {
             font-size: 48px;
             margin-bottom: 16px;
+        }
+        
+        .batch-select-bar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 16px;
+            margin-bottom: 12px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+        }
+        .batch-select-count {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+        .batch-add-btn { background: rgba(0, 245, 212, 0.1); border-color: var(--accent-cyan); color: var(--accent-cyan); }
+        .batch-add-btn:hover { background: var(--accent-cyan); color: #0d1f1e; }
+        .batch-clear-btn { font-size: 11px; color: var(--text-muted); }
+        
+        .file-item .batch-checkbox-wrap {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            z-index: 2;
+        }
+        .file-item .batch-checkbox {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: var(--accent-cyan);
         }
         
         .explorer-grid {
@@ -1179,6 +1382,26 @@
             margin-bottom: 24px;
         }
         
+        .processing-batch-stats {
+            text-align: left;
+            padding: 12px 14px;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+        .processing-batch-stats p {
+            margin: 0 0 6px 0;
+            font-size: 13px;
+        }
+        .processing-batch-stats p:last-child,
+        .processing-batch-stats .processing-pct-line {
+            margin-bottom: 0;
+        }
+        .processing-step-pct {
+            color: var(--accent-cyan);
+            font-weight: 600;
+        }
+        
         .processing-progress {
             width: 100%;
             height: 6px;
@@ -1212,6 +1435,114 @@
             margin-bottom: 0 !important;
         }
         
+        .processing-minimize-btn {
+            margin-top: 16px;
+            padding: 10px 18px;
+            font-size: 13px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+        .processing-minimize-btn:hover {
+            background: var(--bg-hover);
+            color: var(--accent-cyan);
+            border-color: var(--accent-cyan);
+        }
+        
+        .processing-cancel-btn {
+            margin-top: 10px;
+            padding: 10px 18px;
+            font-size: 13px;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid var(--accent-error, #ef4444);
+            border-radius: 8px;
+            color: var(--accent-error, #ef4444);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+        .processing-cancel-btn:hover {
+            background: rgba(239, 68, 68, 0.2);
+            color: #f87171;
+            border-color: #f87171;
+        }
+        
+        /* Barra de processamento minimizada */
+        .processing-minimized-bar {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 14px 18px;
+            margin-bottom: 20px;
+        }
+        .processing-minimized-content {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        .processing-minimized-info {
+            flex: 1;
+            min-width: 200px;
+        }
+        .processing-minimized-info h4 {
+            font-size: 14px;
+            margin: 0 0 4px 0;
+            color: var(--text-primary);
+        }
+        .processing-minimized-info p {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin: 0 0 6px 0;
+        }
+        .processing-minimized-batch {
+            font-size: 11px;
+            color: var(--text-muted);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px 10px;
+        }
+        .processing-minimized-progress-wrap {
+            flex: 1;
+            min-width: 120px;
+            height: 6px;
+            background: var(--bg-tertiary);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .processing-minimized-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-purple));
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+        .processing-maximize-btn {
+            padding: 8px 14px;
+            font-size: 12px;
+            background: rgba(0, 245, 212, 0.1);
+            border: 1px solid var(--accent-cyan);
+            border-radius: 8px;
+            color: var(--accent-cyan);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+        }
+        .processing-maximize-btn:hover {
+            background: var(--accent-cyan);
+            color: #0d1f1e;
+        }
+        
         /* Elementos desabilitados durante processamento */
         body.processing .sidebar select,
         body.processing .sidebar input,
@@ -1231,9 +1562,10 @@
         /* ========== MAIN CONTENT ========== */
         .main-content {
             flex: 1;
-            margin-left: 300px;
+            margin-left: var(--sidebar-width);
             padding: 32px;
             padding-bottom: 60px;
+            transition: margin-left 0.2s ease;
         }
         
         /* Header */
@@ -1369,6 +1701,49 @@
             font-weight: 600;
         }
         
+        /* Fila de lote */
+        .batch-queue-bar {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .batch-queue-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+        .batch-queue-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .batch-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            font-size: 12px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 1px solid var(--border-color);
+            background: var(--bg-hover);
+            color: var(--text-primary);
+            transition: background 0.2s, border-color 0.2s;
+        }
+        .batch-btn.cut:hover { border-color: var(--accent-pink); background: rgba(236, 72, 153, 0.1); }
+        .batch-btn.full:hover { border-color: var(--accent-cyan); background: rgba(0, 245, 212, 0.1); }
+        .batch-btn.clear:hover { border-color: var(--accent-error); background: rgba(239, 68, 68, 0.1); }
+        
         /* Action Cards */
         .action-cards {
             display: grid;
@@ -1465,6 +1840,169 @@
         }
         
         .action-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Action Options (flags + Executar) */
+        .action-options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        .action-option-block {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+        .action-option-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 18px 20px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+        .action-option-row:hover {
+            border-color: var(--bg-hover);
+            background: var(--bg-hover);
+        }
+        .action-option-row.option-cut:hover,
+        .action-option-row.option-cut:has(.action-option-checkbox:checked) { border-color: rgba(241, 91, 181, 0.4); }
+        .action-option-block.option-subtitle .action-option-row:hover,
+        .action-option-block.option-subtitle .action-option-row:has(.action-option-checkbox:checked) { border-color: rgba(0, 245, 160, 0.4); }
+        .action-option-checkbox {
+            width: 20px;
+            height: 20px;
+            accent-color: var(--accent-purple);
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        .action-option-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: var(--bg-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            flex-shrink: 0;
+        }
+        .action-option-row.option-cut .action-option-icon { color: var(--accent-pink); }
+        .action-option-block.option-subtitle .action-option-icon { color: var(--accent-success); }
+        .action-option-text {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            flex: 1;
+            min-width: 0;
+        }
+        .action-option-text strong { font-size: 15px; color: var(--text-primary); }
+        .action-option-desc {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.45;
+        }
+        .action-option-config-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+        .action-option-config-btn:hover {
+            border-color: var(--accent-success);
+            background: rgba(0, 245, 160, 0.08);
+            color: var(--accent-success);
+        }
+        /* Subseção: Correção com IA (UI estilo AI) */
+        .action-option-ai-subsection {
+            margin-top: 0;
+            margin-left: 84px;
+            margin-right: 0;
+            margin-bottom: 0;
+            padding: 14px 18px;
+            background: linear-gradient(135deg, rgba(155, 93, 229, 0.06) 0%, rgba(0, 245, 212, 0.04) 100%);
+            border: 1px solid rgba(155, 93, 229, 0.25);
+            border-top: none;
+            border-radius: 0 0 14px 14px;
+            position: relative;
+            box-shadow: inset 0 1px 0 rgba(155, 93, 229, 0.08);
+        }
+        .action-option-ai-subsection::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(155, 93, 229, 0.3), transparent);
+            opacity: 0.6;
+        }
+        .action-option-ai-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+        }
+        .action-option-ai-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-cyan));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            flex-shrink: 0;
+            box-shadow: 0 4px 14px rgba(155, 93, 229, 0.35);
+        }
+        .action-option-ai-text {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .action-option-ai-text strong { font-size: 13px; color: var(--text-primary); }
+        .action-option-ai-text span { font-size: 12px; color: var(--text-secondary); }
+        .action-execute-wrap {
+            margin-bottom: 32px;
+        }
+        .action-btn-execute {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 16px 32px;
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));
+            border: none;
+            border-radius: 14px;
+            color: white;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            box-shadow: 0 4px 20px rgba(155, 93, 229, 0.35);
+        }
+        .action-btn-execute:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 28px rgba(155, 93, 229, 0.45);
+            filter: brightness(1.05);
+        }
+        .action-btn-execute:disabled {
             opacity: 0.5;
             cursor: not-allowed;
             transform: none;
@@ -1647,6 +2185,89 @@
             transition: all 0.2s ease;
         }
         
+        /* Modal Configurar Legendas: layout duas colunas (esquerda = opções, direita = preview) */
+        #subtitleConfigModal .modal,
+        .subtitle-config-modal-two-col {
+            max-width: 960px !important;
+            width: 95% !important;
+        }
+        #subtitleConfigModal .modal {
+            display: flex !important;
+            flex-direction: column !important;
+        }
+        #subtitleConfigModal .subtitle-config-two-col-row {
+            display: flex !important;
+            flex-direction: row-reverse !important;
+            flex-wrap: nowrap !important;
+            flex: 1 1 auto;
+            min-height: 0;
+            gap: 16px;
+            order: 1;
+        }
+        #subtitleConfigModal .subtitle-config-left-col {
+            flex: 0 0 300px;
+            min-width: 280px;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+        #subtitleConfigModal .subtitle-config-right-col {
+            flex: 1 1 400px;
+            min-width: 280px;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            background: #000;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        #subtitleConfigModal .modal-actions {
+            flex-shrink: 0;
+            margin-top: auto;
+            width: 100%;
+            padding: 12px 0 4px 0;
+            border-top: 2px solid var(--border-color);
+            order: 999;
+        }
+        #subtitleConfigModal .modal {
+            padding-bottom: 20px;
+            min-height: 70vh;
+        }
+
+        /* Subtitle config modal tabs */
+        .subtitle-config-tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0;
+        }
+        .subtitle-config-tabs .tab-btn {
+            padding: 10px 16px;
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: -1px;
+            border-radius: 6px 6px 0 0;
+        }
+        .subtitle-config-tabs .tab-btn:hover {
+            color: var(--text-primary);
+        }
+        .subtitle-config-tabs .tab-btn.active {
+            color: var(--accent-cyan);
+            border-bottom-color: var(--accent-cyan);
+        }
+        .subtitle-config-tab-content {
+            display: none;
+        }
+        .subtitle-config-tab-content.active {
+            display: block;
+        }
+
         .modal-btn.cancel {
             background: transparent;
             border: 1px solid var(--border-color);
@@ -1709,14 +2330,39 @@
         }
         
         @media (max-width: 900px) {
-            .sidebar {
-                width: 100%;
+            .sidebar-wrapper {
+                width: 100% !important;
                 position: relative;
                 height: auto;
             }
             
+            .sidebar-wrapper.collapsed {
+                width: 0 !important;
+                overflow: hidden;
+            }
+            
+            .sidebar-wrapper.collapsed .sidebar-toggle-btn {
+                position: fixed;
+                left: 8px;
+                top: 16px;
+                right: auto;
+                transform: none;
+                z-index: 101;
+                opacity: 1;
+                pointer-events: auto;
+                width: 36px;
+                height: 36px;
+            }
+            
+            .sidebar {
+                width: 100%;
+                position: relative;
+                height: auto;
+                padding-top: 24px;
+            }
+            
             .main-content {
-                margin-left: 0;
+                margin-left: 0 !important;
             }
             
             .app-container {
@@ -1726,13 +2372,35 @@
             .action-cards {
                 grid-template-columns: 1fr;
             }
+
+            .action-option-row {
+                flex-wrap: wrap;
+            }
+            .action-option-config-btn {
+                width: 100%;
+                margin-top: 8px;
+                justify-content: center;
+            }
+            .action-option-ai-subsection {
+                margin-left: 20px;
+            }
+            
+            .sidebar-resize-handle {
+                display: none;
+            }
         }
     </style>
 </head>
 <body>
     <div class="app-container">
         <!-- Sidebar -->
-        <aside class="sidebar">
+        <div class="sidebar-wrapper" id="sidebarWrapper">
+            <button type="button" class="sidebar-toggle-btn no-draggable" id="sidebarToggleBtn" aria-expanded="true" aria-controls="stage-slideover-sidebar" aria-label="Fechar barra lateral" title="Fechar barra lateral" data-state="open">
+                <i data-lucide="panel-left-close" class="lucide-icon sidebar-toggle-icon-open" aria-hidden="true"></i>
+                <i data-lucide="panel-left" class="lucide-icon sidebar-toggle-icon-closed" aria-hidden="true" style="display: none;"></i>
+            </button>
+            <div class="sidebar-resize-handle" id="sidebarResizeHandle" title="Arraste para redimensionar"></div>
+            <aside class="sidebar" id="stage-slideover-sidebar">
             <div class="logo">
                 <div class="logo-icon"><i data-lucide="film" class="lucide-icon"></i></div>
                 <div class="logo-text">
@@ -1743,10 +2411,11 @@
             
             <div class="divider"></div>
             
-            <div class="section-title"><i data-lucide="video" class="lucide-sm"></i> Vídeo Selecionado</div>
+            <div class="section-title"><i data-lucide="video" class="lucide-sm"></i> <span id="selectedVideoSectionTitleText">Vídeo Selecionado</span></div>
             <div class="selected-video" id="selectedVideoBox">
-                <div class="label">Arquivo atual</div>
+                <div class="label" id="selectedVideoLabel">Arquivo atual</div>
                 <div class="value" id="selectedVideoText">Nenhum vídeo selecionado</div>
+                <button type="button" class="clear-selection-btn" id="clearSelectionBtn" onclick="clearSelection()" style="display:none" title="Desmarcar vídeo">Limpar seleção</button>
             </div>
             
             <div class="divider"></div>
@@ -1837,6 +2506,23 @@
                 </select>
             </div>
 
+            <div class="config-group" id="cutPresetGroup">
+                <label>Estilo de Corte</label>
+                <div class="preset-buttons" id="presetButtons">
+                    <button type="button" class="preset-btn" data-preset="agressivo" onclick="applyCutPreset('agressivo')">Agressivo</button>
+                    <button type="button" class="preset-btn preset-active" data-preset="reels" onclick="applyCutPreset('reels')">Reels</button>
+                    <button type="button" class="preset-btn" data-preset="youtube" onclick="applyCutPreset('youtube')">YouTube</button>
+                    <button type="button" class="preset-btn" data-preset="natural" onclick="applyCutPreset('natural')">Natural</button>
+                    <button type="button" class="preset-btn" data-preset="podcast" onclick="applyCutPreset('podcast')">Podcast</button>
+                </div>
+                <div class="cut-scale" id="cutScale">
+                    <span>Rápido</span>
+                    <span class="scale-line">——</span>
+                    <span>Longo</span>
+                </div>
+                <div class="cut-preview-text" id="cutPreviewText">✔ cortes rápidos ✔ ritmo acelerado ✔ pausas mínimas</div>
+            </div>
+
             <div class="config-group" id="cutSettingsGroup">
                 <label class="label-with-help">
                     Ajuste de Corte
@@ -1846,6 +2532,7 @@
                             <h5><i data-lucide="sliders" class="lucide-sm"></i> Ajuste Fino</h5>
                             <p><strong>Margem:</strong> Tempo extra mantido antes/depois da fala.</p>
                             <p><strong>Silêncio Min:</strong> Menor pausa para considerar corte.</p>
+                            <p><strong>Threshold:</strong> Confiança mínima da palavra (Whisper).</p>
                             <div class="tooltip-note">
                                 <i data-lucide="info" class="lucide-sm"></i>
                                 Seco: Menor margem/silêncio<br>
@@ -1858,17 +2545,25 @@
                 <div class="range-container">
                     <label class="range-label">
                         <span>Margem (Padding)</span>
-                        <span id="paddingValue">0.25s</span>
+                        <span id="paddingValue">0.30s</span>
                     </label>
-                    <input type="range" id="paddingRange" min="0" max="1" step="0.05" value="0.25">
+                    <input type="range" id="paddingRange" min="0" max="1" step="0.05" value="0.30">
                 </div>
                 
                 <div class="range-container" style="margin-top: 10px;">
                     <label class="range-label">
                         <span>Silêncio Mínimo</span>
-                        <span id="minSilenceValue">0.5s</span>
+                        <span id="minSilenceValue">0.45s</span>
                     </label>
-                    <input type="range" id="minSilenceRange" min="0.1" max="2" step="0.1" value="0.5">
+                    <input type="range" id="minSilenceRange" min="0.1" max="2" step="0.05" value="0.45">
+                </div>
+                
+                <div class="range-container" style="margin-top: 10px;" id="wordThresholdContainer">
+                    <label class="range-label">
+                        <span>Threshold (confiança)</span>
+                        <span id="wordThresholdValue">0.28</span>
+                    </label>
+                    <input type="range" id="wordThresholdRange" min="0.15" max="0.35" step="0.01" value="0.28">
                 </div>
             </div>
             
@@ -1887,14 +2582,6 @@
                 </select>
             </div>
             
-            <div class="toggle-group">
-                <span class="toggle-label">Correção com IA</span>
-                <label class="toggle-switch">
-                    <input type="checkbox" id="useAI" checked>
-                    <span class="toggle-slider"></span>
-                </label>
-            </div>
-            
             <div class="divider"></div>
             
             <div class="api-status" id="apiStatus">
@@ -1903,7 +2590,7 @@
             </div>
             
             <button class="api-btn" id="configApiBtn" onclick="showApiModal()">
-                <i data-lucide="key" class="lucide-sm"></i> Configurar API Key
+                <i data-lucide="key" class="lucide-sm"></i> <span id="configApiBtnText">Configurar API Key</span>
             </button>
             
             <div class="sidebar-footer">
@@ -1913,6 +2600,7 @@
                 <p>v1.0.0 • Powered by Whisper & Gemini</p>
             </div>
         </aside>
+        </div>
         
         <!-- Main Content -->
         <main class="main-content">
@@ -1966,7 +2654,7 @@
                     <span id="explorerStats">0 pastas, 0 vídeos</span>
                 </div>
             </div>
-            <input type="file" id="fileInput" accept="video/*" onchange="handleFileSelect(event)" style="display: none;">
+            <input type="file" id="fileInput" accept="video/*" multiple onchange="handleFileSelect(event)" style="display: none;">
             
             <!-- Video Preview Modal -->
             <div class="preview-modal" id="previewModal">
@@ -2001,40 +2689,95 @@
                 </div>
             </div>
             
+            <!-- Fila de lote (visível quando há arquivos na fila) -->
+            <div class="batch-queue-bar" id="batchQueueBar" style="display: none;">
+                <div class="batch-queue-info">
+                    <i data-lucide="layers" class="lucide-sm"></i>
+                    <span id="batchQueueCount">0</span> arquivo(s) na fila — processamento em sequência
+                </div>
+                <div class="batch-queue-actions">
+                    <button type="button" class="batch-btn cut" id="btnBatchCut" onclick="startBatchProcess('cut')">
+                        <i data-lucide="scissors" class="lucide-sm"></i> Processar lote (Corte)
+                    </button>
+                    <button type="button" class="batch-btn full" id="btnBatchFull" onclick="startBatchProcess('full')">
+                        <i data-lucide="zap" class="lucide-sm"></i> Processar lote (Tudo)
+                    </button>
+                    <button type="button" class="batch-btn clear" onclick="clearBatchQueue()">
+                        <i data-lucide="trash-2" class="lucide-sm"></i> Limpar fila
+                    </button>
+                </div>
+            </div>
+            
             <!-- Action Cards -->
             <div class="section-header">
                 <i data-lucide="rocket" class="lucide-lg"></i>
                 <h3>Ações Disponíveis</h3>
             </div>
             
-            <div class="action-cards">
-                <!-- Card: Remover Silêncio -->
-                <div class="action-card card-cut">
-                    <div class="card-icon"><i data-lucide="scissors" class="lucide-lg"></i></div>
-                    <h4>Remover Silêncio</h4>
-                    <p>Detecta e remove automaticamente pausas e silêncios do vídeo usando IA</p>
-                    <button class="action-btn" onclick="processRemoveSilence()" id="btnCut">
-                        Executar Corte
-                    </button>
+            <div class="action-options">
+                <!-- Opção 1: Remover Silêncio -->
+                <label class="action-option-row option-cut">
+                    <input type="checkbox" class="action-option-checkbox" id="optionRemoveSilence" name="action">
+                    <span class="action-option-icon"><i data-lucide="scissors" class="lucide-lg"></i></span>
+                    <span class="action-option-text">
+                        <strong>Remover Silêncio</strong>
+                        <span class="action-option-desc">Detecta e remove automaticamente pausas e silêncios do vídeo usando IA</span>
+                    </span>
+                </label>
+
+                <!-- Opção 2: Adicionar Legendas -->
+                <div class="action-option-block option-subtitle">
+                    <label class="action-option-row">
+                        <input type="checkbox" class="action-option-checkbox" id="optionAddSubtitles" name="action">
+                        <span class="action-option-icon"><i data-lucide="subtitles" class="lucide-lg"></i></span>
+                        <span class="action-option-text">
+                            <strong>Adicionar Legendas</strong>
+                            <span class="action-option-desc">Transcreve o áudio e adiciona legendas dinâmicas estilo CapCut (karaokê)</span>
+                        </span>
+                        <button type="button" class="action-option-config-btn" onclick="event.preventDefault(); event.stopPropagation(); openSubtitleConfigModal();" title="Configurar estilo das legendas">
+                            <i data-lucide="palette" class="lucide-sm"></i> Configurar Legendas
+                        </button>
+                    </label>
+                    <!-- 2.1 Subseção: Correção da legenda com IA -->
+                    <div class="action-option-ai-subsection">
+                        <label class="action-option-ai-row">
+                            <input type="checkbox" id="useAI" class="action-option-checkbox">
+                            <span class="action-option-ai-icon"><i data-lucide="sparkles" class="lucide-md"></i></span>
+                            <span class="action-option-ai-text">
+                                <strong>Correção da legenda com IA</strong>
+                                <span>Corrige os textos da legenda com AI</span>
+                            </span>
+                        </label>
+                    </div>
                 </div>
-                
-                <!-- Card: Gerar Legendas -->
-                <div class="action-card card-subtitle">
-                    <div class="card-icon"><i data-lucide="subtitles" class="lucide-lg"></i></div>
-                    <h4>Gerar Legendas</h4>
-                    <p>Transcreve o áudio e adiciona legendas dinâmicas estilo CapCut (karaokê)</p>
-                    <button class="action-btn" onclick="openSubtitleConfigModal()" id="btnSubtitle">
-                        Configurar e Gerar
+            </div>
+
+            <div class="action-execute-wrap">
+                <button type="button" class="action-btn-execute" id="btnExecute" onclick="executeSelectedActions()">
+                    <i data-lucide="play" class="lucide-md"></i> Executar
+                </button>
+            </div>
+            
+            <!-- Barra de processamento minimizada (entre Ações e Terminal) -->
+            <div class="processing-minimized-bar" id="processingMinimizedBar" style="display: none;">
+                <div class="processing-minimized-content">
+                    <div class="processing-minimized-info">
+                        <h4 id="processingMinimizedTitle">Processando...</h4>
+                        <p id="processingMinimizedStatus">Aguarde...</p>
+                        <div class="processing-minimized-batch" id="processingMinimizedBatch" style="display: none;">
+                            <span id="processingMinimizedStep">—</span>
+                            <span> · Vídeos: <span id="processingMinimizedDone">0</span> processados, 1 processando, <span id="processingMinimizedLeft">0</span> restantes</span>
+                            <span> · <span id="processingMinimizedPct" class="processing-step-pct">0%</span> do lote</span>
+                        </div>
+                    </div>
+                    <div class="processing-minimized-progress-wrap">
+                        <div class="processing-minimized-progress-bar" id="processingMinimizedProgressBar" style="width: 0%;"></div>
+                    </div>
+                    <button type="button" class="processing-maximize-btn" onclick="setProcessingMinimized(false)" title="Expandir tela de processamento">
+                        <i data-lucide="maximize-2" class="lucide-sm"></i> Expandir
                     </button>
-                </div>
-                
-                <!-- Card: Processo Completo -->
-                <div class="action-card card-full">
-                    <div class="card-icon"><i data-lucide="zap" class="lucide-lg"></i></div>
-                    <h4>Processo Completo</h4>
-                    <p>Pipeline completo: Corta silêncio + Adiciona legendas + Correção com IA</p>
-                    <button class="action-btn" onclick="processFullPipeline()" id="btnFull">
-                        Executar Tudo
+                    <button type="button" class="processing-cancel-btn" style="margin-top: 0;" onclick="confirmCancelProcessing()" title="Interromper o processamento">
+                        <i data-lucide="square" class="lucide-sm"></i> Cancelar
                     </button>
                 </div>
             </div>
@@ -2068,96 +2811,213 @@
         </main>
     </div>
     
-    <!-- Modal Configuração Legendas -->
+    <!-- Modal Configuração Legendas: esquerda = opções, direita = preview -->
     <div class="modal-overlay" id="subtitleConfigModal">
-        <div class="modal" style="max-width: 500px; max-height: 90vh; display: flex; flex-direction: column;">
+        <div class="modal subtitle-config-modal-two-col" style="max-width: 960px; width: 95%; max-height: 90vh; display: flex; flex-direction: column;">
             <h3><i data-lucide="palette" class="lucide-md"></i> Configurar Legendas</h3>
-            
-            <div style="flex: 1; overflow-y: auto; padding-right: 4px; padding-bottom: 10px;">
-                <div style="display: flex; gap: 16px; margin-bottom: 20px;">
-                    <div style="flex: 1;">
-                        <label style="display: block; font-size: 12px; margin-bottom: 4px; color: var(--text-secondary);">Destaque</label>
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <input type="color" id="subHighlightColor" value="#ff4500" style="width: 40px; height: 30px; border: none; padding: 0; background: none; cursor: pointer;">
-                            <span id="subHighlightColorVal" style="font-size: 12px; font-family: monospace;">#ff4500</span>
-                        </div>
+
+            <div class="subtitle-config-two-col-row" id="subtitleConfigTwoColRow">
+                <!-- Coluna direita (ordem visual): preview -->
+                <div id="subtitlePreviewCol" class="subtitle-config-right-col subtitle-config-preview-col">
+                    <div style="display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-bottom: 1px solid var(--border-color); background: var(--bg-secondary);">
+                        <i data-lucide="search" class="lucide-sm" style="color: var(--text-secondary);"></i>
+                        <label style="font-size: 12px; color: var(--text-secondary);">Zoom</label>
+                        <select id="subtitlePreviewZoom" style="padding: 4px 8px; border-radius: 6px; background: var(--bg-primary); border: 1px solid var(--border-color); color: var(--text-primary); font-size: 12px;">
+                            <option value="25">25%</option>
+                            <option value="50" selected>50%</option>
+                            <option value="75">75%</option>
+                            <option value="100">100%</option>
+                            <option value="125">125%</option>
+                            <option value="150">150%</option>
+                        </select>
                     </div>
-                    <div style="flex: 1;">
-                        <label style="display: block; font-size: 12px; margin-bottom: 4px; color: var(--text-secondary);">Texto</label>
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <input type="color" id="subTextColor" value="#ffffff" style="width: 40px; height: 30px; border: none; padding: 0; background: none; cursor: pointer;">
-                            <span id="subTextColorVal" style="font-size: 12px; font-family: monospace;">#ffffff</span>
+                    <div id="subtitlePreviewScroll" style="flex: 1; overflow: auto; overflow-x: auto; overflow-y: auto; min-height: 220px; max-height: 55vh; display: flex; align-items: center; justify-content: center; position: relative;">
+                        <div id="subtitlePreviewInner" style="position: relative; flex-shrink: 0;">
+                            <img id="subtitlePreviewImg" src="" alt="Preview" style="display: block; vertical-align: top; max-width: none; height: auto;">
                         </div>
-                    </div>
-                    <div style="flex: 1;">
-                        <label style="display: block; font-size: 12px; margin-bottom: 4px; color: var(--text-secondary);">Borda</label>
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <input type="color" id="subOutlineColor" value="#000000" style="width: 40px; height: 30px; border: none; padding: 0; background: none; cursor: pointer;">
-                            <span id="subOutlineColorVal" style="font-size: 12px; font-family: monospace;">#000000</span>
+                        <div id="subtitlePreviewPlaceholder" style="position: absolute; padding: 24px; color: #666; font-size: 12px; text-align: center;">
+                            <i data-lucide="image" class="lucide-xl"></i>
+                            <p style="margin-top: 8px;">Preview — selecione um vídeo e altere as opções</p>
+                        </div>
+                        <div id="subtitlePreviewLoading" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; color: white;">
+                            <div class="loading-spinner"></div>
                         </div>
                     </div>
                 </div>
-
-                <!-- Tamanho da Fonte -->
-                <div style="margin-bottom: 20px;">
-                    <div class="range-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                        <label style="font-size: 12px; color: var(--text-secondary);">Tamanho da Fonte</label>
-                        <span id="fontSizeValue" style="font-size: 11px; font-family: monospace;">10pt</span>
+                <!-- Coluna esquerda (ordem visual): abas e opções -->
+                <div class="subtitle-config-left-col">
+                    <div class="subtitle-config-tabs">
+                        <button type="button" class="tab-btn active" data-tab="modelos">Modelos</button>
+                        <button type="button" class="tab-btn" data-tab="fonte">Fonte</button>
+                        <button type="button" class="tab-btn" data-tab="estilos">Estilos</button>
+                        <button type="button" class="tab-btn" data-tab="posicao">Posição</button>
                     </div>
-                    <input type="range" id="fontSizeRange" min="5" max="30" step="1" value="10" style="width: 100%;">
-                    <p style="font-size: 11px; color: var(--text-secondary); margin-top: 4px;">Padrão: 10pt (Ajuste conforme necessário)</p>
+                    <div id="subtitleConfigScroll" style="flex: 1; overflow-y: auto; padding-right: 6px; padding-bottom: 8px; min-height: 0;">
+                <!-- Aba 1: Modelos -->
+                <div id="tab-modelos" class="subtitle-config-tab-content active">
+                    <div style="margin-bottom: 12px;">
+                        <label style="display: flex; align-items: center; gap: 10px; padding: 12px; background: var(--bg-secondary); border-radius: 8px; cursor: pointer; border: 1px solid var(--border-color);">
+                            <input type="radio" name="subTitleModel" id="subTitleModelTraditional" value="traditional" checked>
+                            <span style="font-size: 13px;">Legenda tradicional (sem destaques)</span>
+                        </label>
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label style="display: flex; align-items: center; gap: 10px; padding: 12px; background: var(--bg-secondary); border-radius: 8px; cursor: pointer; border: 1px solid var(--border-color);">
+                            <input type="radio" name="subTitleModel" id="subTitleModelHighlights" value="highlights">
+                            <span style="font-size: 13px;">Legenda com destaques</span>
+                        </label>
+                    </div>
                 </div>
 
-                <!-- Sliders para ajustes finos -->
-                <div style="margin-bottom: 20px;">
-                    <div style="display: flex; gap: 16px;">
-                        <div style="flex: 1;">
-                            <div class="range-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                                <label style="font-size: 12px; color: var(--text-secondary);">Tamanho do Destaque</label>
-                                <span id="highlightWidthValue" style="font-size: 11px; font-family: monospace;">5.0</span>
+                <!-- Aba 2: Fonte -->
+                <div id="tab-fonte" class="subtitle-config-tab-content">
+                    <div style="margin-bottom: 16px;">
+                        <label style="display: block; font-size: 12px; margin-bottom: 4px; color: var(--text-secondary);">Fonte do sistema</label>
+                        <select id="fontSelector" style="width: 100%; padding: 8px; border-radius: 6px; background: var(--bg-secondary); border: 1px solid var(--border-color); color: var(--text-primary); font-size: 13px;">
+                            <option value="Prohibition" selected>Prohibition (Padrão)</option>
+                            <option value="Arial">Arial</option>
+                            <option value="Arial Black">Arial Black</option>
+                            <option value="Montserrat">Montserrat</option>
+                            <option value="Roboto">Roboto</option>
+                            <option value="Helvetica">Helvetica</option>
+                            <option value="Verdana">Verdana</option>
+                            <option value="Impact">Impact</option>
+                            <option value="Courier New">Courier New</option>
+                            <option value="Times New Roman">Times New Roman</option>
+                        </select>
+                    </div>
+                    <div style="margin-bottom: 8px;">
+                        <label style="display: block; font-size: 12px; margin-bottom: 4px; color: var(--text-secondary);">Fonte customizada (upload)</label>
+                        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                            <input type="file" id="customFontUpload" accept=".ttf,.otf,.woff,.woff2" style="flex: 1; min-width: 140px; padding: 8px; font-size: 12px;">
+                            <button type="button" id="customFontUploadBtn" class="modal-btn" style="background: var(--accent-cyan); color: #fff; padding: 8px 14px; white-space: nowrap;">Enviar para o sistema</button>
+                            <span id="customFontName" style="font-size: 11px; color: var(--text-secondary);"></span>
+                        </div>
+                        <p style="font-size: 11px; color: var(--text-secondary); margin-top: 4px;">.ttf, .otf, .woff, .woff2 — selecione o arquivo e clique em Enviar para o sistema</p>
+                    </div>
+                </div>
+
+                <!-- Aba 3: Estilos -->
+                <div id="tab-estilos" class="subtitle-config-tab-content">
+                    <!-- 3.1 Fonte: cor, tamanho, opacidade, peso, caixa -->
+                    <div style="margin-bottom: 16px;">
+                        <label style="font-size: 12px; color: var(--text-secondary); font-weight: 600;">Fonte</label>
+                        <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-top: 8px;">
+                            <div style="flex: 1; min-width: 100px;">
+                                <label style="display: block; font-size: 11px; margin-bottom: 2px; color: var(--text-secondary);">Cor</label>
+                                <div style="display: flex; align-items: center; gap: 6px;">
+                                    <input type="color" id="subTextColor" value="#ffffff" style="width: 36px; height: 28px; border: none; padding: 0; background: none; cursor: pointer;">
+                                    <span id="subTextColorVal" style="font-size: 11px; font-family: monospace;">#ffffff</span>
+                                </div>
                             </div>
-                            <input type="range" id="highlightWidthRange" min="0" max="15" step="0.5" value="5" style="width: 100%;">
-                        </div>
-                        <div style="flex: 1;">
-                             <div class="range-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                                <label style="font-size: 12px; color: var(--text-secondary);">Borda do Texto</label>
-                                <span id="outlineWidthValue" style="font-size: 11px; font-family: monospace;">1.5</span>
+                            <div style="flex: 1; min-width: 80px;">
+                                <label style="display: block; font-size: 11px; margin-bottom: 2px; color: var(--text-secondary);">Tamanho</label>
+                                <div style="display: flex; align-items: center; gap: 4px;">
+                                    <input type="range" id="fontSizeRange" min="5" max="30" step="1" value="10" style="flex: 1;">
+                                    <span id="fontSizeValue" style="font-size: 11px; font-family: monospace; min-width: 32px;">10pt</span>
+                                </div>
                             </div>
-                            <input type="range" id="outlineWidthRange" min="0" max="5" step="0.1" value="1.5" style="width: 100%;">
+                            <div style="flex: 0 0 80px;">
+                                <label style="display: block; font-size: 11px; margin-bottom: 2px; color: var(--text-secondary);">Opacidade</label>
+                                <div style="display: flex; align-items: center; gap: 4px;">
+                                    <input type="range" id="fontOpacityRange" min="0" max="100" step="5" value="100" style="flex: 1;">
+                                    <span id="fontOpacityValue" style="font-size: 11px; font-family: monospace;">100%</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 12px; margin-top: 10px; flex-wrap: wrap;">
+                            <div>
+                                <label style="font-size: 11px; color: var(--text-secondary);">Peso</label>
+                                <select id="fontWeightSelect" style="padding: 6px 10px; border-radius: 6px; background: var(--bg-secondary); border: 1px solid var(--border-color); color: var(--text-primary); font-size: 12px;">
+                                    <option value="normal">Normal</option>
+                                    <option value="bold">Negrito</option>
+                                    <option value="italic">Itálico</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="font-size: 11px; color: var(--text-secondary);">Caixa</label>
+                                <select id="fontCaseSelect" style="padding: 6px 10px; border-radius: 6px; background: var(--bg-secondary); border: 1px solid var(--border-color); color: var(--text-primary); font-size: 12px;">
+                                    <option value="TT">TT (MAIÚSCULAS)</option>
+                                    <option value="Tt" selected>Tt (Primeira maiúscula)</option>
+                                    <option value="tt">tt (minúsculas)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 3.2 Traço (borda): 0-5 + cor -->
+                    <div style="margin-bottom: 16px;">
+                        <label style="font-size: 12px; color: var(--text-secondary); font-weight: 600;">Traço (borda do texto)</label>
+                        <div style="display: flex; gap: 12px; align-items: center; margin-top: 8px; flex-wrap: wrap;">
+                            <div style="flex: 1; min-width: 120px;">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 2px;">
+                                    <span style="font-size: 11px; color: var(--text-secondary);">Largura 0–5</span>
+                                    <span id="outlineWidthValue" style="font-size: 11px; font-family: monospace;">1.5</span>
+                                </div>
+                                <input type="range" id="outlineWidthRange" min="0" max="5" step="0.1" value="1.5" style="width: 100%;">
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 6px;">
+                                <input type="color" id="subOutlineColor" value="#000000" style="width: 36px; height: 28px; border: none; padding: 0; background: none; cursor: pointer;">
+                                <span id="subOutlineColorVal" style="font-size: 11px; font-family: monospace;">#000000</span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 3.3 Plano de fundo -->
+                    <div style="margin-bottom: 16px;">
+                        <label style="font-size: 12px; color: var(--text-secondary); font-weight: 600;">Plano de fundo</label>
+                        <div style="display: flex; gap: 12px; align-items: center; margin-top: 8px; flex-wrap: wrap;">
+                            <div style="display: flex; align-items: center; gap: 6px;">
+                                <label style="font-size: 11px; color: var(--text-secondary);">Cor</label>
+                                <input type="color" id="subBgColor" value="#000000" style="width: 36px; height: 28px; border: none; padding: 0; background: none; cursor: pointer;">
+                                <span id="subBgColorVal" style="font-size: 11px; font-family: monospace;">#000000</span>
+                            </div>
+                            <div style="flex: 1; min-width: 100px;">
+                                <label style="font-size: 11px; color: var(--text-secondary);">Transparência</label>
+                                <div style="display: flex; align-items: center; gap: 4px;">
+                                    <input type="range" id="subBgOpacityRange" min="0" max="100" step="5" value="0" style="flex: 1;">
+                                    <span id="subBgOpacityValue" style="font-size: 11px; font-family: monospace;">0%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 3.4 Destaque: cor, tamanho -->
+                    <div style="margin-bottom: 8px;">
+                        <label style="font-size: 12px; color: var(--text-secondary); font-weight: 600;">Destaque da fonte</label>
+                        <div style="display: flex; gap: 12px; align-items: center; margin-top: 8px; flex-wrap: wrap;">
+                            <div style="display: flex; align-items: center; gap: 6px;">
+                                <label style="font-size: 11px; color: var(--text-secondary);">Cor</label>
+                                <input type="color" id="subHighlightColor" value="#ff4500" style="width: 36px; height: 28px; border: none; padding: 0; background: none; cursor: pointer;">
+                                <span id="subHighlightColorVal" style="font-size: 11px; font-family: monospace;">#ff4500</span>
+                            </div>
+                            <div style="flex: 1; min-width: 100px;">
+                                <label style="font-size: 11px; color: var(--text-secondary);">Tamanho (destaque)</label>
+                                <div style="display: flex; align-items: center; gap: 4px;">
+                                    <input type="range" id="highlightWidthRange" min="0" max="15" step="0.5" value="5" style="flex: 1;">
+                                    <span id="highlightWidthValue" style="font-size: 11px; font-family: monospace;">5.0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Aba 4: Posição -->
+                    <div id="tab-posicao" class="subtitle-config-tab-content">
+                        <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 10px;">Arraste o mock da legenda para definir a posição. O preview à direita atualiza em tempo real.</p>
+                        <div id="subtitlePositionStage" style="aspect-ratio: 16/9; max-height: 200px; background: #111; border-radius: 8px; position: relative; cursor: crosshair; border: 1px solid var(--border-color);">
+                            <div id="subtitlePositionMock" style="position: absolute; padding: 6px 12px; background: rgba(0,0,0,0.75); color: #fff; font-size: 14px; white-space: nowrap; border: 1px solid rgba(255,255,255,0.3); border-radius: 4px; cursor: grab; user-select: none; pointer-events: auto;">PREVIEW DA LEGENDA</div>
+                        </div>
+                        <input type="hidden" id="subPosX" value="50">
+                        <input type="hidden" id="subPosY" value="92">
+                        <div style="display: flex; align-items: center; gap: 12px; margin-top: 10px; flex-wrap: wrap;">
+                            <span style="font-size: 12px; color: var(--text-secondary);">X: <strong id="subtitlePosXVal">50</strong>%</span>
+                            <span style="font-size: 12px; color: var(--text-secondary);">Y: <strong id="subtitlePosYVal">92</strong>%</span>
+                            <button type="button" class="modal-btn" id="subtitlePositionDefaultBtn" style="background: var(--bg-secondary); border: 1px solid var(--border-color); color: var(--text-primary); padding: 6px 12px; font-size: 12px;">Default</button>
                         </div>
                     </div>
                 </div>
-
-                <!-- Seletor de Fonte -->
-                <div style="margin-bottom: 20px;">
-                    <label style="display: block; font-size: 12px; margin-bottom: 4px; color: var(--text-secondary);">Fonte</label>
-                    <select id="fontSelector" style="width: 100%; padding: 8px; border-radius: 6px; background: var(--bg-secondary); border: 1px solid var(--border-color); color: var(--text-primary); font-size: 13px;">
-                        <option value="Prohibition" selected>Prohibition (Padrão)</option>
-                        <option value="Arial">Arial</option>
-                        <option value="Arial Black">Arial Black</option>
-                        <option value="Montserrat">Montserrat</option>
-                        <option value="Roboto">Roboto</option>
-                        <option value="Helvetica">Helvetica</option>
-                        <option value="Verdana">Verdana</option>
-                        <option value="Impact">Impact</option>
-                        <option value="Courier New">Courier New</option>
-                        <option value="Times New Roman">Times New Roman</option>
-                    </select>
-                </div>
-
-                <div style="margin-bottom: 10px; text-align: center; background: #000; border-radius: 8px; overflow: hidden; position: relative; min-height: 150px; display: flex; align-items: center; justify-content: center;">
-                    <img id="subtitlePreviewImg" src="" alt="Preview" style="max-width: 100%; max-height: 300px; height: auto; display: none;">
-                    <div id="subtitlePreviewPlaceholder" style="padding: 40px; color: #666;">
-                        <i data-lucide="image" class="lucide-xl"></i>
-                        <p style="margin-top: 10px; font-size: 12px;">Clique em "Atualizar Preview"</p>
-                    </div>
-                    <div id="subtitlePreviewLoading" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; color: white;">
-                        <div class="loading-spinner"></div>
-                    </div>
                 </div>
             </div>
 
-            <div class="modal-actions" style="justify-content: space-between; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border-color); flex-shrink: 0;">
+            <!-- Rodapé fixo: botões Preview e Cancelar sempre embaixo -->
+            <div class="modal-actions subtitle-config-footer" style="justify-content: space-between; width: 100%; flex-shrink: 0; background: var(--bg-primary);">
                 <div style="display: flex; align-items: center; gap: 8px;">
                     <input type="checkbox" id="previewModeCheckbox" checked>
                     <label for="previewModeCheckbox" style="font-size: 13px; color: var(--text-primary); cursor: pointer;">Editar antes de queimar</label>
@@ -2165,7 +3025,6 @@
                 <div style="display: flex; gap: 8px;">
                     <button class="modal-btn" onclick="updateSubtitlePreview()" style="background: var(--bg-secondary); border: 1px solid var(--border-color); color: var(--text-primary);"><i data-lucide="refresh-cw" class="lucide-sm" style="margin-right: 6px;"></i> Preview</button>
                     <button class="modal-btn cancel" onclick="hideSubtitleConfigModal()">Cancelar</button>
-                    <button class="modal-btn confirm" onclick="confirmSubtitleGeneration()">Gerar</button>
                 </div>
             </div>
         </div>
@@ -2197,13 +3056,34 @@
     <!-- Modal API Key -->
     <div class="modal-overlay" id="apiModal">
         <div class="modal">
-            <h3><i data-lucide="key" class="lucide-md"></i> Configurar API Key do Google Gemini</h3>
+            <h3><i data-lucide="key" class="lucide-md"></i> <span id="apiModalTitle">Configurar API Key do Google Gemini</span></h3>
             <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 16px;">
                 A API Key é necessária para correção ortográfica com IA. 
                 <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer" style="color: var(--accent-cyan);">Obter chave →</a>
             </p>
-            <input type="password" id="apiKeyInput" placeholder="Cole sua API Key aqui...">
-            <div class="modal-actions">
+            <!-- Bloco "Editar": chave atual + olho + copiar; depois input nova chave -->
+            <div id="apiModalCurrentKeyBlock" style="display: none; margin-bottom: 16px;">
+                <label style="font-size: 12px; color: var(--text-secondary); display: block; margin-bottom: 6px;">Chave atual</label>
+                <div class="api-key-current-row" style="display: flex; align-items: center; gap: 8px; padding: 10px; background: var(--bg-hover); border-radius: 8px; margin-bottom: 12px;">
+                    <span id="apiKeyCurrentDisplay" style="font-family: monospace; font-size: 13px; flex: 1; word-break: break-all;">—</span>
+                    <button type="button" class="modal-btn-icon" id="apiKeyToggleVisibility" onclick="toggleApiKeyVisibility()" title="Mostrar/ocultar chave" style="padding: 6px; border: none; background: transparent; color: var(--text-secondary); cursor: pointer; border-radius: 6px;">
+                        <i data-lucide="eye" class="lucide-sm"></i>
+                    </button>
+                    <button type="button" class="modal-btn-icon" id="apiKeyCopyBtn" onclick="copyCurrentApiKey()" title="Copiar chave" style="padding: 6px; border: none; background: transparent; color: var(--text-secondary); cursor: pointer; border-radius: 6px;">
+                        <i data-lucide="copy" class="lucide-sm"></i>
+                    </button>
+                </div>
+                <label style="font-size: 12px; color: var(--text-secondary); display: block; margin-bottom: 6px;">Nova API Key</label>
+                <div style="margin-bottom: 4px;">
+                    <input type="password" id="apiKeyInput" placeholder="Deixe em branco para manter a atual ou digite uma nova..." style="width: 100%; box-sizing: border-box;">
+                    <a href="#" id="apiKeyClearLink" onclick="clearNewApiKeyInput(); return false;" style="font-size: 12px; color: var(--accent-cyan); margin-top: 6px; display: inline-block;">Apagar e digitar nova</a>
+                </div>
+            </div>
+            <!-- Bloco "Configurar": só o input -->
+            <div id="apiModalSetupBlock">
+                <input type="password" id="apiKeyInputSetup" placeholder="Cole sua API Key aqui..." style="width: 100%; box-sizing: border-box;">
+            </div>
+            <div class="modal-actions" style="margin-top: 16px;">
                 <button class="modal-btn cancel" onclick="hideApiModal()">Cancelar</button>
                 <button class="modal-btn confirm" onclick="saveApiKey()">Salvar</button>
             </div>
@@ -2272,10 +3152,22 @@
             <div class="processing-animation" id="lottieContainer"></div>
             <h3 id="processingTitle">Processando...</h3>
             <p id="processingStatus">Aguarde enquanto processamos seu vídeo</p>
+            <!-- Estatísticas do lote (visíveis apenas em processamento em lote) -->
+            <div class="processing-batch-stats" id="processingBatchStats" style="display: none;">
+                <p class="processing-step-line"><strong>Etapa:</strong> <span id="processingStepName">—</span> <span id="processingStepPercent" class="processing-step-pct"></span></p>
+                <p class="processing-videos-line"><strong>Vídeos:</strong> <span id="processingBatchDone">0</span> processados, 1 processando, <span id="processingBatchLeft">0</span> restantes</p>
+                <p class="processing-pct-line"><strong>Progresso do lote:</strong> <span id="processingBatchPct" class="processing-step-pct">0%</span></p>
+            </div>
             <div class="processing-progress">
                 <div class="processing-progress-bar" id="processingProgressBar"></div>
             </div>
             <p class="processing-tip" id="processingTip"><i data-lucide="lightbulb" class="lucide-sm"></i> Isso pode levar alguns minutos dependendo do tamanho do vídeo</p>
+            <button type="button" class="processing-minimize-btn" id="processingMinimizeBtn" onclick="setProcessingMinimized(true)" title="Minimizar para usar a interface">
+                <i data-lucide="minimize-2" class="lucide-sm"></i> Minimizar
+            </button>
+            <button type="button" class="processing-cancel-btn" id="processingCancelBtn" onclick="confirmCancelProcessing()" title="Interromper o processamento">
+                <i data-lucide="square" class="lucide-sm"></i> Cancelar processo
+            </button>
         </div>
     </div>
     
@@ -2284,6 +3176,13 @@
         let selectedVideo = null;
         let isProcessing = false;
         let lottieAnimation = null;
+        let batchQueue = [];
+        let batchMode = null;
+        let batchIndex = 0;
+        const BATCH_MAX_FILES = 100;
+        let selectedForBatch = new Set();
+        let processingMinimized = false;
+        let processingCancelledByUser = false;
         
         // Animação Lottie (Loading)
         const loadingAnimationData = {"nm":"Loading 11","ddd":0,"h":1080,"w":1080,"meta":{"g":"@lottiefiles/toolkit-js 0.33.2"},"layers":[{"ty":4,"nm":"Shape Layer 1","sr":1,"st":0,"op":91,"ip":0,"hd":false,"ddd":0,"bm":0,"hasMask":false,"ao":0,"ks":{"a":{"a":0,"k":[0,0,0],"ix":1},"s":{"a":0,"k":[100,100,100],"ix":6},"sk":{"a":0,"k":0},"p":{"a":0,"k":[540,540,0],"ix":2},"r":{"a":0,"k":0,"ix":10},"sa":{"a":0,"k":0},"o":{"a":0,"k":100,"ix":11}},"ef":[],"shapes":[{"ty":"gr","bm":0,"hd":false,"mn":"ADBE Vector Group","nm":"Group 1","ix":1,"cix":2,"np":3,"it":[{"ty":"gr","bm":0,"hd":false,"mn":"ADBE Vector Group","nm":"Group 2","ix":1,"cix":2,"np":1,"it":[{"ty":"gr","bm":0,"hd":false,"mn":"ADBE Vector Group","nm":"Ellipse 1","ix":1,"cix":2,"np":1,"it":[{"ty":"el","bm":0,"hd":false,"mn":"ADBE Vector Shape - Ellipse","nm":"Ellipse Path 1","d":1,"p":{"a":0,"k":[0,0],"ix":3},"s":{"a":0,"k":[562.894,562.894],"ix":2}},{"ty":"tr","a":{"a":0,"k":[0,0],"ix":1},"s":{"a":1,"k":[{"o":{"x":0.333,"y":0},"i":{"x":0.667,"y":1},"s":[100,100],"t":0},{"o":{"x":0.333,"y":0},"i":{"x":0.667,"y":1},"s":[0,100],"t":22.5},{"o":{"x":0.333,"y":0},"i":{"x":0.667,"y":1},"s":[100,100],"t":45},{"o":{"x":0.333,"y":0},"i":{"x":0.667,"y":1},"s":[0,100],"t":67.5},{"s":[100,100],"t":90}],"ix":3},"sk":{"a":0,"k":0,"ix":4},"p":{"a":0,"k":[0,0],"ix":2},"r":{"a":1,"k":[{"o":{"x":0.333,"y":0},"i":{"x":0.667,"y":1},"s":[0],"t":0},{"o":{"x":0.333,"y":0},"i":{"x":0.667,"y":1},"s":[90],"t":45},{"s":[180],"t":90}],"ix":6},"sa":{"a":0,"k":0,"ix":5},"o":{"a":0,"k":100,"ix":7}}]},{"ty":"tr","a":{"a":0,"k":[0,0],"ix":1},"s":{"a":0,"k":[100,100],"ix":3},"sk":{"a":0,"k":0,"ix":4},"p":{"a":0,"k":[0,0],"ix":2},"r":{"a":0,"k":-90,"ix":6},"sa":{"a":0,"k":0,"ix":5},"o":{"a":0,"k":100,"ix":7}}]},{"ty":"gr","bm":0,"hd":false,"mn":"ADBE Vector Group","nm":"Group 1","ix":2,"cix":2,"np":1,"it":[{"ty":"gr","bm":0,"hd":false,"mn":"ADBE Vector Group","nm":"Ellipse 1","ix":1,"cix":2,"np":1,"it":[{"ty":"el","bm":0,"hd":false,"mn":"ADBE Vector Shape - Ellipse","nm":"Ellipse Path 1","d":1,"p":{"a":0,"k":[0,0],"ix":3},"s":{"a":0,"k":[562.894,562.894],"ix":2}},{"ty":"tr","a":{"a":0,"k":[0,0],"ix":1},"s":{"a":1,"k":[{"o":{"x":0.333,"y":0},"i":{"x":0.667,"y":1},"s":[100,100],"t":0},{"o":{"x":0.333,"y":0},"i":{"x":0.667,"y":1},"s":[0,100],"t":22.5},{"o":{"x":0.333,"y":0},"i":{"x":0.667,"y":1},"s":[100,100],"t":45},{"o":{"x":0.333,"y":0},"i":{"x":0.667,"y":1},"s":[0,100],"t":67.5},{"s":[100,100],"t":90}],"ix":3},"sk":{"a":0,"k":0,"ix":4},"p":{"a":0,"k":[0,0],"ix":2},"r":{"a":1,"k":[{"o":{"x":0.333,"y":0},"i":{"x":0.667,"y":1},"s":[0],"t":0},{"o":{"x":0.333,"y":0},"i":{"x":0.667,"y":1},"s":[90],"t":45},{"s":[180],"t":90}],"ix":6},"sa":{"a":0,"k":0,"ix":5},"o":{"a":0,"k":100,"ix":7}}]},{"ty":"tr","a":{"a":0,"k":[0,0],"ix":1},"s":{"a":0,"k":[100,100],"ix":3},"sk":{"a":0,"k":0,"ix":4},"p":{"a":0,"k":[0,0],"ix":2},"r":{"a":0,"k":0,"ix":6},"sa":{"a":0,"k":0,"ix":5},"o":{"a":0,"k":100,"ix":7}}]},{"ty":"st","bm":0,"hd":false,"mn":"ADBE Vector Graphic - Stroke","nm":"Stroke 1","lc":2,"lj":2,"ml":1,"o":{"a":0,"k":100,"ix":4},"w":{"a":0,"k":60,"ix":5},"c":{"a":0,"k":[0,0.96,0.82],"ix":3}},{"ty":"tr","a":{"a":0,"k":[0,0],"ix":1},"s":{"a":0,"k":[100,100],"ix":3},"sk":{"a":0,"k":0,"ix":4},"p":{"a":0,"k":[0,0],"ix":2},"r":{"a":0,"k":0,"ix":6},"sa":{"a":0,"k":0,"ix":5},"o":{"a":0,"k":100,"ix":7}}]}],"ind":1}],"v":"5.12.1","fr":30,"op":91,"ip":0,"assets":[]};
@@ -2335,30 +3234,101 @@
         
         socket.on('progress_update', (data) => {
             updateProgress(data.text, data.value);
-            // Atualiza também o overlay de processamento
             if (isProcessing) {
-                updateProcessingStatus(data.text, data.value);
+                if (batchMode && batchQueue.length > 0) {
+                    const total = batchQueue.length;
+                    const stepPct = data.value != null ? Number(data.value) : 0; // 0-100
+                    const percentLote = total > 0 ? ((batchIndex + stepPct / 100) / total) * 100 : 0;
+                    updateProcessingStatus(data.text, Math.min(100, percentLote), {
+                        stepName: data.text || '—',
+                        stepPercent: stepPct,
+                        processed: batchIndex,
+                        remaining: total - batchIndex - 1,
+                        total: total,
+                        percentLote: percentLote
+                    });
+                } else {
+                    updateProcessingStatus(data.text, data.value);
+                }
             }
         });
         
         socket.on('process_complete', (data) => {
+            if (processingCancelledByUser) {
+                processingCancelledByUser = false;
+                isProcessing = false;
+                batchMode = null;
+                batchQueue = [];
+                batchIndex = 0;
+                updateButtons();
+                hideProcessingOverlay();
+                updateBatchQueueUI();
+                return;
+            }
+            if (batchMode) {
+                if (data.success) {
+                    addLog(`  [${batchIndex + 1}/${batchQueue.length}] Concluído: ${(batchQueue[batchIndex] || '').split('/').pop()}`, 'success');
+                    loadVideoList();
+                } else {
+                    addLog(`  [${batchIndex + 1}/${batchQueue.length}] Erro: ${data.error || 'Falha'}`, 'error');
+                }
+                batchIndex++;
+                if (batchIndex >= batchQueue.length) {
+                    isProcessing = false;
+                    batchMode = null;
+                    batchQueue = [];
+                    updateButtons();
+                    hideProcessingOverlay();
+                    updateBatchQueueUI();
+                    showNotification('Lote concluído', 'Todos os arquivos foram processados.', 'success');
+                    addLog('Lote concluído.', 'success');
+                } else {
+                    processNextInBatch();
+                }
+                return;
+            }
             isProcessing = false;
             updateButtons();
             hideProcessingOverlay();
-            
             if (data.success) {
                 showNotification('Processo Concluído!', `Arquivo salvo: ${data.filename}`, 'success');
-                loadVideoList(); // Atualiza a lista com o novo arquivo
+                loadVideoList();
             } else {
                 showNotification('Erro no Processamento', data.error || 'Ocorreu um erro.', 'error');
             }
         });
 
         socket.on('subtitle_generated', (data) => {
+            if (processingCancelledByUser) {
+                processingCancelledByUser = false;
+                isProcessing = false;
+                batchMode = null;
+                batchQueue = [];
+                batchIndex = 0;
+                updateButtons();
+                hideProcessingOverlay();
+                updateBatchQueueUI();
+                return;
+            }
+            if (batchMode) {
+                if (data.success) addLog(`  [${batchIndex + 1}/${batchQueue.length}] Legendas geradas.`, 'success');
+                batchIndex++;
+                if (batchIndex >= batchQueue.length) {
+                    isProcessing = false;
+                    batchMode = null;
+                    batchQueue = [];
+                    updateButtons();
+                    hideProcessingOverlay();
+                    updateBatchQueueUI();
+                    showNotification('Lote concluído', 'Todos os arquivos foram processados.', 'success');
+                } else {
+                    processNextInBatch();
+                }
+                return;
+            }
             isProcessing = false;
             updateButtons();
             hideProcessingOverlay();
-            
             if (data.success) {
                 showNotification('Legendas Geradas!', 'Abrindo editor...', 'success');
                 showSubtitleEditorModal();
@@ -2398,16 +3368,63 @@
         
         // ========== FUNÇÕES DO UI ==========
         
-        function updateSelectedVideo(filename) {
+        function getEffectiveSelection() {
+            if (selectedForBatch && selectedForBatch.size > 0) {
+                const files = Array.from(selectedForBatch).map(p => (p || '').split('/').pop()).filter(Boolean);
+                return { type: 'multiple', files };
+            }
+            if (selectedVideo) {
+                return { type: 'single', files: [(selectedVideo || '').split('/').pop()].filter(Boolean) };
+            }
+            return { type: 'none', files: [] };
+        }
+
+        function updateSelectedVideoDisplay() {
             const box = document.getElementById('selectedVideoBox');
             const text = document.getElementById('selectedVideoText');
-            
-            if (filename) {
-                box.classList.add('has-video');
-                text.textContent = '✅ ' + filename;
+            const clearBtn = document.getElementById('clearSelectionBtn');
+            const titleEl = document.getElementById('selectedVideoSectionTitleText');
+            const labelEl = document.getElementById('selectedVideoLabel');
+            const { type, files } = getEffectiveSelection();
+
+            const isPlural = type === 'multiple' && files.length > 1;
+            if (titleEl) titleEl.textContent = isPlural ? 'Vídeos Selecionados' : 'Vídeo Selecionado';
+            if (labelEl) labelEl.textContent = isPlural ? 'Arquivos atuais' : 'Arquivo atual';
+
+            if (type === 'none') {
+                if (box) box.classList.remove('has-video');
+                if (text) text.textContent = 'Nenhum vídeo selecionado';
+                if (clearBtn) clearBtn.style.display = 'none';
             } else {
-                box.classList.remove('has-video');
-                text.textContent = 'Nenhum vídeo selecionado';
+                if (box) box.classList.add('has-video');
+                if (text) {
+                    if (type === 'single' || files.length === 1) text.textContent = '✅ ' + (files[0] || '');
+                    else text.textContent = '✅ ' + files.length + ' vídeo(s): ' + files.join(', ');
+                }
+                if (clearBtn) clearBtn.style.display = 'block';
+            }
+        }
+
+        function updateSelectedVideo(filename) {
+            updateSelectedVideoDisplay();
+        }
+
+        async function clearSelection() {
+            try {
+                selectedForBatch.clear();
+                document.querySelectorAll('.batch-checkbox').forEach(cb => { if (cb) cb.checked = false; });
+                updateBatchSelectBar();
+                const res = await fetch('/api/clear_selection', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin' });
+                const data = await res.json();
+                if (data.success) {
+                    selectedVideo = null;
+                    updateSelectedVideoDisplay();
+                    updateExplorerSelection();
+                    loadFileExplorer(currentPath);
+                    showNotification('Seleção removida', 'Nenhum vídeo selecionado', 'info');
+                }
+            } catch (e) {
+                showNotification('Erro', e.message || 'Falha ao limpar seleção', 'error');
             }
         }
         
@@ -2416,17 +3433,20 @@
             const icon = document.getElementById('apiStatusIcon');
             const text = document.getElementById('apiStatusText');
             const btn = document.getElementById('configApiBtn');
+            const btnText = document.getElementById('configApiBtnText');
             
             if (hasKey) {
                 status.className = 'api-status configured';
                 icon.textContent = '✅';
                 text.textContent = 'API Key configurada';
-                btn.style.display = 'none';
+                btn.style.display = 'block';
+                if (btnText) btnText.textContent = 'Editar API Key';
             } else {
                 status.className = 'api-status not-configured';
                 icon.textContent = '❌';
                 text.textContent = 'API Key não configurada';
                 btn.style.display = 'block';
+                if (btnText) btnText.textContent = 'Configurar API Key';
             }
         }
         
@@ -2450,19 +3470,33 @@
         }
         
         function updateButtons() {
-            const btns = ['btnCut', 'btnSubtitle', 'btnFull'];
-            btns.forEach(id => {
-                document.getElementById(id).disabled = isProcessing;
-            });
+            const btnExecute = document.getElementById('btnExecute');
+            if (btnExecute) btnExecute.disabled = isProcessing;
         }
         
         // ========== PROCESSING OVERLAY ==========
         
-        function showProcessingOverlay(title = 'Processando...', status = 'Aguarde enquanto processamos seu vídeo') {
+        function showProcessingOverlay(title = 'Processando...', status = 'Aguarde enquanto processamos seu vídeo', batchInfo = null) {
+            processingMinimized = false;
+            document.getElementById('processingMinimizedBar').style.display = 'none';
             document.body.classList.add('processing');
             document.getElementById('processingTitle').textContent = title;
             document.getElementById('processingStatus').textContent = status;
             document.getElementById('processingProgressBar').style.width = '0%';
+            const batchStatsEl = document.getElementById('processingBatchStats');
+            if (batchInfo) {
+                batchStatsEl.style.display = 'block';
+                document.getElementById('processingStepName').textContent = batchInfo.stepName || '—';
+                const pctEl = document.getElementById('processingStepPercent');
+                pctEl.textContent = batchInfo.stepPercent != null ? `(${formatPct(batchInfo.stepPercent)}%)` : '';
+                document.getElementById('processingBatchDone').textContent = batchInfo.processed ?? 0;
+                document.getElementById('processingBatchLeft').textContent = batchInfo.remaining ?? 0;
+                const total = batchInfo.total || (batchInfo.processed + 1 + (batchInfo.remaining ?? 0));
+                const percentLote = total > 0 ? ((batchInfo.processed || 0) / total) * 100 : 0;
+                document.getElementById('processingBatchPct').textContent = formatPct(percentLote) + '%';
+            } else {
+                batchStatsEl.style.display = 'none';
+            }
             document.getElementById('processingOverlay').classList.add('active');
             
             // Inicializa animação Lottie
@@ -2483,21 +3517,95 @@
             lucide.createIcons();
         }
         
+        function formatPct(n) {
+            if (n == null || isNaN(n)) return '0';
+            return Number(n).toFixed(1).replace(/\.0$/, '');
+        }
+        
         function hideProcessingOverlay() {
+            processingMinimized = false;
             document.body.classList.remove('processing');
             document.getElementById('processingOverlay').classList.remove('active');
-            
-            // Para a animação Lottie
+            document.getElementById('processingMinimizedBar').style.display = 'none';
             if (lottieAnimation) {
                 lottieAnimation.stop();
             }
         }
         
-        function updateProcessingStatus(status, progress = null) {
+        function confirmCancelProcessing() {
+            if (!confirm('Cancelar todo o processamento? A fila será limpa e nada permanecerá em andamento.')) {
+                return;
+            }
+            processingCancelledByUser = true;
+            isProcessing = false;
+            batchMode = null;
+            batchQueue = [];
+            batchIndex = 0;
+            updateButtons();
+            hideProcessingOverlay();
+            updateBatchQueueUI();
+            fetch('/api/process/cancel', { method: 'POST', headers: { 'Content-Type': 'application/json' } }).catch(function() {});
+            showNotification('Processamento cancelado', 'Tudo foi cancelado. Nada permanece em andamento.', 'warning');
+            addLog('Processamento cancelado pelo usuário.', 'warning');
+        }
+        
+        function setProcessingMinimized(minimized) {
+            processingMinimized = minimized;
+            const overlay = document.getElementById('processingOverlay');
+            const bar = document.getElementById('processingMinimizedBar');
+            if (minimized) {
+                document.body.classList.remove('processing');
+                overlay.classList.remove('active');
+                bar.style.display = 'block';
+                syncMinimizedBar();
+                if (lottieAnimation) lottieAnimation.stop();
+            } else {
+                document.body.classList.add('processing');
+                overlay.classList.add('active');
+                bar.style.display = 'none';
+                if (lottieAnimation) lottieAnimation.play();
+            }
+            lucide.createIcons();
+        }
+        
+        function syncMinimizedBar() {
+            const bar = document.getElementById('processingMinimizedBar');
+            if (!bar || bar.style.display === 'none') return;
+            bar.querySelector('#processingMinimizedTitle').textContent = document.getElementById('processingTitle').textContent;
+            bar.querySelector('#processingMinimizedStatus').textContent = document.getElementById('processingStatus').textContent;
+            const progBar = document.getElementById('processingProgressBar');
+            const w = progBar ? progBar.style.width : '0%';
+            bar.querySelector('#processingMinimizedProgressBar').style.width = w;
+            const batchStats = document.getElementById('processingBatchStats');
+            const batchBlock = bar.querySelector('#processingMinimizedBatch');
+            if (batchStats && batchStats.style.display !== 'none') {
+                batchBlock.style.display = 'flex';
+                batchBlock.querySelector('#processingMinimizedStep').textContent = document.getElementById('processingStepName').textContent;
+                batchBlock.querySelector('#processingMinimizedDone').textContent = document.getElementById('processingBatchDone').textContent;
+                batchBlock.querySelector('#processingMinimizedLeft').textContent = document.getElementById('processingBatchLeft').textContent;
+                batchBlock.querySelector('#processingMinimizedPct').textContent = (document.getElementById('processingBatchPct') || {}).textContent || '0%';
+            } else {
+                batchBlock.style.display = 'none';
+            }
+        }
+        
+        function updateProcessingStatus(status, progress = null, batchInfo = null) {
             document.getElementById('processingStatus').textContent = status;
             if (progress !== null) {
-                document.getElementById('processingProgressBar').style.width = progress + '%';
+                document.getElementById('processingProgressBar').style.width = Math.min(100, progress) + '%';
             }
+            if (batchInfo) {
+                const batchStatsEl = document.getElementById('processingBatchStats');
+                batchStatsEl.style.display = 'block';
+                document.getElementById('processingStepName').textContent = batchInfo.stepName ?? '—';
+                const pctEl = document.getElementById('processingStepPercent');
+                pctEl.textContent = batchInfo.stepPercent != null ? `(${formatPct(batchInfo.stepPercent)}%)` : '';
+                document.getElementById('processingBatchDone').textContent = batchInfo.processed ?? 0;
+                document.getElementById('processingBatchLeft').textContent = batchInfo.remaining ?? 0;
+                const percentLote = batchInfo.percentLote != null ? batchInfo.percentLote : (batchInfo.total > 0 ? ((batchInfo.processed || 0) / batchInfo.total) * 100 : 0);
+                document.getElementById('processingBatchPct').textContent = formatPct(percentLote) + '%';
+            }
+            if (processingMinimized) syncMinimizedBar();
         }
         
         function updateProcessingTip(tip) {
@@ -2515,18 +3623,103 @@
             }, 5000);
         }
         
+        let currentApiKeyRevealed = null;
+        let apiKeyDisplayVisible = false;
+        
         function showApiModal() {
-            document.getElementById('apiModal').classList.add('active');
+            const modalEl = document.getElementById('apiModal');
+            if (!modalEl) return;
+            modalEl.classList.add('active');
+            
+            const hasKey = document.getElementById('apiStatus').classList.contains('configured');
+            const titleEl = document.getElementById('apiModalTitle');
+            const blockEdit = document.getElementById('apiModalCurrentKeyBlock');
+            const blockSetup = document.getElementById('apiModalSetupBlock');
+            
+            if (titleEl) titleEl.textContent = hasKey ? 'Atualizar API Key do Google Gemini' : 'Configurar API Key do Google Gemini';
+            if (hasKey) {
+                if (blockEdit) blockEdit.style.display = 'block';
+                if (blockSetup) blockSetup.style.display = 'none';
+                const inputEl = document.getElementById('apiKeyInput');
+                if (inputEl) inputEl.value = '';
+                currentApiKeyRevealed = null;
+                apiKeyDisplayVisible = false;
+                const dispEl = document.getElementById('apiKeyCurrentDisplay');
+                if (dispEl) dispEl.textContent = '…';
+                const toggleBtn = document.getElementById('apiKeyToggleVisibility');
+                if (toggleBtn) {
+                    toggleBtn.innerHTML = '<i data-lucide="eye" class="lucide-sm"></i>';
+                }
+                if (typeof lucide !== 'undefined' && lucide.createIcons) lucide.createIcons();
+                fetch('/api/reveal_api_key')
+                    .then(r => r.json())
+                    .then(data => {
+                        currentApiKeyRevealed = data.api_key || '';
+                        const masked = currentApiKeyRevealed.length > 8
+                            ? currentApiKeyRevealed.slice(0, 4) + '...' + currentApiKeyRevealed.slice(-4)
+                            : '****';
+                        const d = document.getElementById('apiKeyCurrentDisplay');
+                        if (d) d.textContent = masked;
+                    })
+                    .catch(() => {
+                        const d = document.getElementById('apiKeyCurrentDisplay');
+                        if (d) d.textContent = '—';
+                    });
+            } else {
+                if (blockEdit) blockEdit.style.display = 'none';
+                if (blockSetup) blockSetup.style.display = 'block';
+                const setupInput = document.getElementById('apiKeyInputSetup');
+                if (setupInput) setupInput.value = '';
+            }
         }
         
         function hideApiModal() {
             document.getElementById('apiModal').classList.remove('active');
+            currentApiKeyRevealed = null;
+        }
+        
+        function toggleApiKeyVisibility() {
+            if (!currentApiKeyRevealed) return;
+            const disp = document.getElementById('apiKeyCurrentDisplay');
+            const toggleBtn = document.getElementById('apiKeyToggleVisibility');
+            if (!disp || !toggleBtn) return;
+            apiKeyDisplayVisible = !apiKeyDisplayVisible;
+            if (apiKeyDisplayVisible) {
+                disp.textContent = currentApiKeyRevealed;
+                toggleBtn.innerHTML = '<i data-lucide="eye-off" class="lucide-sm"></i>';
+            } else {
+                disp.textContent = currentApiKeyRevealed.length > 8
+                    ? currentApiKeyRevealed.slice(0, 4) + '...' + currentApiKeyRevealed.slice(-4)
+                    : '****';
+                toggleBtn.innerHTML = '<i data-lucide="eye" class="lucide-sm"></i>';
+            }
+            if (typeof lucide !== 'undefined' && lucide.createIcons) lucide.createIcons();
+        }
+        
+        function copyCurrentApiKey() {
+            if (!currentApiKeyRevealed) return;
+            navigator.clipboard.writeText(currentApiKeyRevealed).then(() => {
+                showNotification('Copiado', 'Chave copiada para a área de transferência.', 'success');
+            }).catch(() => showNotification('Erro', 'Não foi possível copiar.', 'error'));
+        }
+        
+        function clearNewApiKeyInput() {
+            const input = document.getElementById('apiKeyInput');
+            if (input) { input.value = ''; input.focus(); }
         }
         
         function saveApiKey() {
-            const key = document.getElementById('apiKeyInput').value.trim();
+            const isEditMode = document.getElementById('apiModalCurrentKeyBlock').style.display !== 'none';
+            const key = isEditMode
+                ? document.getElementById('apiKeyInput').value.trim()
+                : document.getElementById('apiKeyInputSetup').value.trim();
             
-            // Validação no frontend
+            if (isEditMode && !key) {
+                hideApiModal();
+                showNotification('Ok', 'Chave mantida (nenhuma alteração).', 'info');
+                return;
+            }
+            
             if (!key) {
                 showNotification('Erro', 'Por favor, insira uma API Key.', 'error');
                 return;
@@ -2547,10 +3740,10 @@
                 if (data.success) {
                     updateApiStatus(true);
                     hideApiModal();
-                    // Limpa o input por segurança
                     document.getElementById('apiKeyInput').value = '';
-                    showNotification('Sucesso!', 'API Key configurada com sucesso.', 'success');
-                    addLog('API Key do Gemini configurada.', 'success');
+                    if (document.getElementById('apiKeyInputSetup')) document.getElementById('apiKeyInputSetup').value = '';
+                    showNotification('Sucesso!', isEditMode ? 'API Key atualizada com sucesso.' : 'API Key configurada com sucesso.', 'success');
+                    addLog(isEditMode ? 'API Key do Gemini atualizada.' : 'API Key do Gemini configurada.', 'success');
                 } else {
                     showNotification('Erro', data.error || 'Falha ao salvar API Key.', 'error');
                 }
@@ -2761,8 +3954,16 @@
                         return;
                     }
                     
-                    // Renderiza pastas e arquivos
-                    let html = '<div class="explorer-grid">';
+                    // Barra de seleção múltipla (quando há vídeos)
+                    let html = '';
+                    if (data.files.length > 0) {
+                        html += `<div class="batch-select-bar" id="batchSelectBar" style="display: ${selectedForBatch.size > 0 ? 'flex' : 'none'}">
+                            <span class="batch-select-count" id="batchSelectCount">${selectedForBatch.size} selecionado(s)</span>
+                            <button type="button" class="explorer-btn batch-add-btn" onclick="addSelectedToBatch()"><i data-lucide="layers" class="lucide-sm"></i> Adicionar à fila</button>
+                            <button type="button" class="explorer-btn batch-clear-btn" onclick="clearBatchSelection()">Desmarcar todos</button>
+                        </div>`;
+                    }
+                    html += '<div class="explorer-grid">';
                     
                     // Pastas primeiro
                     data.folders.forEach(folder => {
@@ -2788,9 +3989,15 @@
                     // Depois arquivos
                     data.files.forEach(file => {
                         const isSelected = selectedVideo === file.full_path;
+                        const inBatch = selectedForBatch.has(file.full_path);
                         const thumbId = `thumb_${Math.random().toString(36).substr(2, 9)}`;
+                        const pathAttr = (file.full_path || '').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                        const nameAttr = (file.name || '').replace(/"/g, '&quot;').replace(/</g, '&lt;');
                         html += `
-                            <div class="file-item ${isSelected ? 'selected' : ''}" data-path="${file.full_path}">
+                            <div class="file-item ${isSelected ? 'selected' : ''}" data-path="${pathAttr}" data-name="${nameAttr}" onclick="if(!event.target.closest('.file-actions') && !event.target.closest('.batch-checkbox-wrap')) selectFile(this.getAttribute('data-path'), this.getAttribute('data-name'))">
+                                <div class="batch-checkbox-wrap" onclick="event.stopPropagation()">
+                                    <input type="checkbox" class="batch-checkbox" data-path="${pathAttr}" ${inBatch ? 'checked' : ''} onchange="toggleBatchSelect(this)" title="Selecionar para processar em lote">
+                                </div>
                                 <div class="selected-badge"><i data-lucide="check" class="lucide-sm"></i></div>
                                 <div class="file-preview" id="${thumbId}">
                                     <div class="thumbnail-loading"></div>
@@ -2800,7 +4007,6 @@
                                 <div class="file-meta">${formatFileSize(file.size)}</div>
                                 <div class="file-actions">
                                     <button class="file-action-btn play" onclick="event.stopPropagation(); openPreview('${file.path}', '${file.name}')" title="Preview"><i data-lucide="play" class="lucide-sm"></i></button>
-                                    <button class="file-action-btn select" onclick="event.stopPropagation(); selectFile('${file.full_path}', '${file.name}')" title="Selecionar"><i data-lucide="check" class="lucide-sm"></i></button>
                                     <button class="file-action-btn" onclick="event.stopPropagation(); showMoveFileModal('${file.path}', '${file.name}')" title="Mover"><i data-lucide="move" class="lucide-sm"></i></button>
                                     <button class="file-action-btn" onclick="event.stopPropagation(); showRenameModal('${file.path}', '${file.name}', false)" title="Renomear"><i data-lucide="pencil" class="lucide-sm"></i></button>
                                     <button class="file-action-btn delete" onclick="event.stopPropagation(); openDeleteModal('${file.path}', '${file.name}')" title="Deletar"><i data-lucide="trash-2" class="lucide-sm"></i></button>
@@ -2872,6 +4078,63 @@
             document.querySelectorAll('.file-item').forEach(item => {
                 item.classList.toggle('selected', item.dataset.path === selectedVideo);
             });
+        }
+        
+        function toggleBatchSelect(checkbox) {
+            const path = checkbox.getAttribute('data-path');
+            if (!path) return;
+            if (checkbox.checked) {
+                selectedForBatch.add(path);
+            } else {
+                selectedForBatch.delete(path);
+            }
+            updateBatchSelectBar();
+            updateSelectedVideoDisplay();
+        }
+        
+        function updateBatchSelectBar() {
+            const bar = document.getElementById('batchSelectBar');
+            const countEl = document.getElementById('batchSelectCount');
+            if (!bar || !countEl) return;
+            if (selectedForBatch.size === 0) {
+                bar.style.display = 'none';
+                return;
+            }
+            bar.style.display = 'flex';
+            countEl.textContent = selectedForBatch.size + ' selecionado(s)';
+        }
+        
+        function addSelectedToBatch(silent) {
+            if (selectedForBatch.size === 0) return;
+            const paths = Array.from(selectedForBatch);
+            const total = batchQueue.length + paths.length;
+            if (total > BATCH_MAX_FILES) {
+                if (!silent) showNotification('Atenção', `Máximo ${BATCH_MAX_FILES} arquivos na fila. Adicionando apenas ${BATCH_MAX_FILES - batchQueue.length}.`, 'warning');
+                const toAdd = BATCH_MAX_FILES - batchQueue.length;
+                for (let i = 0; i < toAdd; i++) batchQueue.push(paths[i]);
+            } else {
+                paths.forEach(p => batchQueue.push(p));
+            }
+            selectedForBatch.clear();
+            updateBatchSelectBar();
+            updateBatchQueueUI();
+            if (batchQueue.length > 0) {
+                selectedVideo = batchQueue[0];
+                updateSelectedVideo((batchQueue[0] || '').split('/').pop());
+            }
+            loadFileExplorer(currentPath);
+            if (!silent) {
+                showNotification('Adicionado à fila', batchQueue.length + ' arquivo(s) na fila. Use "Processar lote" para processar em sequência.', 'success');
+            }
+            addLog('Arquivos do workspace adicionados à fila: ' + paths.length, 'info');
+        }
+        
+        function clearBatchSelection() {
+            selectedForBatch.clear();
+            document.querySelectorAll('.batch-checkbox').forEach(cb => { cb.checked = false; });
+            updateBatchSelectBar();
+            updateSelectedVideoDisplay();
+            loadFileExplorer(currentPath);
         }
         
         function selectFile(path, name) {
@@ -3011,6 +4274,98 @@
             // Inicializa ícones Lucide
             lucide.createIcons();
             loadFileExplorer();
+
+            // Ao marcar "Correção da legenda com IA", marcar automaticamente "Adicionar Legendas"
+            const useAIEl = document.getElementById('useAI');
+            const optionAddSubtitlesEl = document.getElementById('optionAddSubtitles');
+            if (useAIEl && optionAddSubtitlesEl) {
+                useAIEl.addEventListener('change', function() {
+                    if (useAIEl.checked) optionAddSubtitlesEl.checked = true;
+                });
+            }
+            
+            // ========== SIDEBAR: acordeão (esconder/mostrar) + redimensionar com mouse ==========
+            const SIDEBAR_MIN = 240;
+            const SIDEBAR_MAX = 480;
+            const SIDEBAR_DEFAULT = 300;
+            const wrapper = document.getElementById('sidebarWrapper');
+            const toggleBtn = document.getElementById('sidebarToggleBtn');
+            const resizeHandle = document.getElementById('sidebarResizeHandle');
+            const sidebarEl = document.getElementById('stage-slideover-sidebar');
+            
+            function getStoredSidebarWidth() {
+                const w = localStorage.getItem('sidebarWidth');
+                if (w === null) return SIDEBAR_DEFAULT;
+                const n = parseInt(w, 10);
+                return isNaN(n) ? SIDEBAR_DEFAULT : Math.max(SIDEBAR_MIN, Math.min(SIDEBAR_MAX, n));
+            }
+            function getStoredSidebarCollapsed() {
+                return localStorage.getItem('sidebarCollapsed') === 'true';
+            }
+            function setSidebarWidth(px) {
+                const w = Math.max(SIDEBAR_MIN, Math.min(SIDEBAR_MAX, px));
+                document.documentElement.style.setProperty('--sidebar-width', w + 'px');
+                localStorage.setItem('sidebarWidth', String(w));
+            }
+            function setSidebarCollapsed(collapsed) {
+                if (!wrapper || !toggleBtn) return;
+                wrapper.classList.toggle('collapsed', collapsed);
+                if (collapsed) {
+                    document.documentElement.style.setProperty('--sidebar-width', '44px');
+                } else {
+                    document.documentElement.style.setProperty('--sidebar-width', getStoredSidebarWidth() + 'px');
+                }
+                toggleBtn.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+                toggleBtn.setAttribute('aria-label', collapsed ? 'Abrir barra lateral' : 'Fechar barra lateral');
+                toggleBtn.setAttribute('title', collapsed ? 'Abrir barra lateral' : 'Fechar barra lateral');
+                toggleBtn.setAttribute('data-state', collapsed ? 'closed' : 'open');
+                const iconOpen = wrapper.querySelector('.sidebar-toggle-icon-open');
+                const iconClosed = wrapper.querySelector('.sidebar-toggle-icon-closed');
+                if (iconOpen) iconOpen.style.display = collapsed ? 'none' : 'block';
+                if (iconClosed) iconClosed.style.display = collapsed ? 'block' : 'none';
+                localStorage.setItem('sidebarCollapsed', collapsed ? 'true' : 'false');
+            }
+            
+            const savedWidth = getStoredSidebarWidth();
+            const savedCollapsed = getStoredSidebarCollapsed();
+            document.documentElement.style.setProperty('--sidebar-width', savedWidth + 'px');
+            setSidebarCollapsed(savedCollapsed);
+            
+            if (toggleBtn) {
+                toggleBtn.addEventListener('click', function() {
+                    const collapsed = wrapper.classList.contains('collapsed');
+                    setSidebarCollapsed(!collapsed);
+                });
+            }
+            
+            if (resizeHandle) {
+                let resizing = false;
+                let startX = 0, startW = 0;
+                resizeHandle.addEventListener('mousedown', function(e) {
+                    e.preventDefault();
+                    if (wrapper.classList.contains('collapsed')) return;
+                    resizing = true;
+                    startX = e.clientX;
+                    startW = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--sidebar-width'), 10) || SIDEBAR_DEFAULT;
+                    resizeHandle.classList.add('resizing');
+                    document.body.style.cursor = 'ew-resize';
+                    document.body.style.userSelect = 'none';
+                });
+                document.addEventListener('mousemove', function(e) {
+                    if (!resizing) return;
+                    const dx = e.clientX - startX;
+                    const newW = startW + dx;
+                    setSidebarWidth(newW);
+                });
+                document.addEventListener('mouseup', function() {
+                    if (resizing) {
+                        resizing = false;
+                        resizeHandle.classList.remove('resizing');
+                        document.body.style.cursor = '';
+                        document.body.style.userSelect = '';
+                    }
+                });
+            }
             
             // Sliders listeners
             const paddingRange = document.getElementById('paddingRange');
@@ -3018,16 +4373,47 @@
             if (paddingRange && paddingValue) {
                 paddingRange.addEventListener('input', (e) => {
                     paddingValue.textContent = e.target.value + 's';
+                    document.querySelectorAll('.preset-btn').forEach(btn => btn.classList.remove('preset-active'));
                 });
             }
-
             const minSilenceRange = document.getElementById('minSilenceRange');
             const minSilenceValue = document.getElementById('minSilenceValue');
             if (minSilenceRange && minSilenceValue) {
                 minSilenceRange.addEventListener('input', (e) => {
                     minSilenceValue.textContent = e.target.value + 's';
+                    document.querySelectorAll('.preset-btn').forEach(btn => btn.classList.remove('preset-active'));
                 });
             }
+            const wordThresholdRange = document.getElementById('wordThresholdRange');
+            const wordThresholdValue = document.getElementById('wordThresholdValue');
+            if (wordThresholdRange && wordThresholdValue) {
+                wordThresholdRange.addEventListener('input', (e) => {
+                    wordThresholdValue.textContent = parseFloat(e.target.value).toFixed(2);
+                    document.querySelectorAll('.preset-btn').forEach(btn => btn.classList.remove('preset-active'));
+                });
+            }
+            // Restaurar últimas opções do usuário (cache no navegador)
+            const savedOpt = loadUserOptions();
+            const presetToApply = (savedOpt && savedOpt.cutPreset && CUT_PRESETS[savedOpt.cutPreset]) ? savedOpt.cutPreset : 'reels';
+            applyCutPreset(presetToApply);
+            if (savedOpt) {
+                const elCut = document.getElementById('optionRemoveSilence');
+                const elSubs = document.getElementById('optionAddSubtitles');
+                const elAI = document.getElementById('useAI');
+                if (elCut && typeof savedOpt.optionRemoveSilence === 'boolean') elCut.checked = savedOpt.optionRemoveSilence;
+                if (elSubs && typeof savedOpt.optionAddSubtitles === 'boolean') elSubs.checked = savedOpt.optionAddSubtitles;
+                if (elAI && typeof savedOpt.useAI === 'boolean') elAI.checked = savedOpt.useAI;
+                const whisperModelEl = document.getElementById('whisperModel');
+                const cutMethodEl = document.getElementById('cutMethod');
+                if (whisperModelEl && savedOpt.whisperModel && whisperModelEl.querySelector('option[value="' + savedOpt.whisperModel + '"]')) whisperModelEl.value = savedOpt.whisperModel;
+                if (cutMethodEl && savedOpt.cutMethod && cutMethodEl.querySelector('option[value="' + savedOpt.cutMethod + '"]')) cutMethodEl.value = savedOpt.cutMethod;
+                const languageEl = document.getElementById('language');
+                if (languageEl && savedOpt.language && languageEl.querySelector('option[value="' + savedOpt.language + '"]')) languageEl.value = savedOpt.language;
+            }
+            ['optionRemoveSilence', 'optionAddSubtitles', 'useAI', 'whisperModel', 'cutMethod', 'language'].forEach(function(id) {
+                const el = document.getElementById(id);
+                if (el) el.addEventListener('change', saveUserOptions);
+            });
             
             // Configura drag and drop no explorador de arquivos
             const dropZone = document.getElementById('explorerContent');
@@ -3045,8 +4431,7 @@
                     e.preventDefault();
                     dropZone.classList.remove('drag-over');
                     
-                    const file = e.dataTransfer.files[0];
-                    if (file && file.type.startsWith('video/')) {
+                    if (e.dataTransfer.files.length) {
                         document.getElementById('fileInput').files = e.dataTransfer.files;
                         handleFileSelect({ target: { files: e.dataTransfer.files } });
                     }
@@ -3089,54 +4474,254 @@
         
         // ========== FILE HANDLING ==========
         
+        const allowedExtensions = ['.mp4', '.mov', '.mkv', '.avi', '.webm', '.m4v'];
+        function isVideoFile(name) {
+            const safe = sanitizeFilename(name);
+            if (!safe) return false;
+            const ext = safe.toLowerCase().substring(safe.lastIndexOf('.'));
+            return allowedExtensions.includes(ext);
+        }
+        
         function handleFileSelect(event) {
-            const file = event.target.files[0];
-            if (file) {
-                // Sanitiza o nome do arquivo
-                const safeName = sanitizeFilename(file.name);
-                
-                if (!safeName) {
-                    showNotification('Erro', 'Nome de arquivo inválido.', 'error');
-                    return;
-                }
-                
-                // Verifica se é um arquivo de vídeo
-                const allowedExtensions = ['.mp4', '.mov', '.mkv', '.avi', '.webm', '.m4v'];
-                const ext = safeName.toLowerCase().substring(safeName.lastIndexOf('.'));
-                
-                if (!allowedExtensions.includes(ext)) {
-                    showNotification('Erro', `Formato não suportado: ${ext}`, 'error');
-                    return;
-                }
-                
-                // Primeiro tenta selecionar (caso já esteja no workspace)
-                fetch('/api/select_video', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ path: safeName })
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        selectedVideo = safeName;
-                        updateSelectedVideo(safeName);
-                        addLog(`Vídeo selecionado: ${safeName}`, 'success');
-                        showNotification('Vídeo Selecionado', safeName, 'success');
-                        loadVideoList();
-                    } else {
-                        // Não está no workspace - faz upload
-                        uploadVideo(file);
-                    }
-                })
-                .catch(err => {
-                    console.error('Erro ao selecionar vídeo:', err);
-                    // Tenta fazer upload mesmo assim
-                    uploadVideo(file);
-                });
-                
-                // Limpa o input
+            const files = event.target.files;
+            if (!files || files.length === 0) return;
+            
+            const list = Array.from(files).filter(f => isVideoFile(f.name));
+            if (list.length === 0) {
+                showNotification('Erro', 'Nenhum vídeo válido selecionado.', 'error');
                 event.target.value = '';
+                return;
             }
+            
+            const capped = list.slice(0, BATCH_MAX_FILES);
+            if (list.length > BATCH_MAX_FILES) {
+                showNotification('Atenção', `Máximo ${BATCH_MAX_FILES} arquivos. Os primeiros ${BATCH_MAX_FILES} foram usados.`, 'warning');
+            }
+            
+            if (capped.length === 1) {
+                processSingleFile(capped[0]);
+            } else {
+                processBatchImport(capped);
+            }
+            event.target.value = '';
+        }
+        
+        function processSingleFile(file) {
+            const safeName = sanitizeFilename(file.name);
+            fetch('/api/select_video', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ path: safeName })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    selectedVideo = (data.video != null ? data.video : safeName);
+                    updateSelectedVideo(selectedVideo);
+                    addLog(`Vídeo selecionado: ${safeName}`, 'success');
+                    showNotification('Vídeo Selecionado', safeName, 'success');
+                    loadVideoList();
+                } else {
+                    uploadVideo(file);
+                }
+            })
+            .catch(() => uploadVideo(file));
+        }
+        
+        function addToBatchQueue(path) {
+            if (!batchQueue.includes(path)) batchQueue.push(path);
+            updateBatchQueueUI();
+        }
+        
+        function updateBatchQueueUI() {
+            const bar = document.getElementById('batchQueueBar');
+            const countEl = document.getElementById('batchQueueCount');
+            if (!bar || !countEl) return;
+            if (batchQueue.length === 0) {
+                bar.style.display = 'none';
+                return;
+            }
+            countEl.textContent = batchQueue.length;
+            bar.style.display = 'flex';
+            const btnCut = document.getElementById('btnBatchCut');
+            const btnFull = document.getElementById('btnBatchFull');
+            if (btnCut) btnCut.disabled = isProcessing;
+            if (btnFull) btnFull.disabled = isProcessing;
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+        
+        function clearBatchQueue() {
+            batchQueue = [];
+            batchMode = null;
+            batchIndex = 0;
+            updateBatchQueueUI();
+            addLog('Fila de lote limpa.', 'info');
+            showNotification('Fila limpa', 'Nenhum arquivo na fila.', 'info');
+        }
+        
+        function uploadOneVideo(file) {
+            return new Promise((resolve, reject) => {
+                const safeName = sanitizeFilename(file.name);
+                const formData = new FormData();
+                formData.append('video', file);
+                const xhr = new XMLHttpRequest();
+                xhr.upload.addEventListener('progress', (e) => {
+                    if (e.lengthComputable) {
+                        const pct = (e.loaded / e.total) * 100;
+                        updateProgress(`Copiando ${safeName}... ${pct.toFixed(0)}%`, pct);
+                    }
+                });
+                xhr.addEventListener('load', () => {
+                    if (xhr.status === 200) {
+                        try {
+                            const data = JSON.parse(xhr.responseText);
+                            if (data.success && data.path) {
+                                resolve(data.path);
+                            } else {
+                                reject(new Error(data.error || 'Upload falhou'));
+                            }
+                        } catch (e) {
+                            reject(e);
+                        }
+                    } else {
+                        reject(new Error('Falha ao copiar vídeo'));
+                    }
+                });
+                xhr.addEventListener('error', () => reject(new Error('Erro de conexão')));
+                xhr.open('POST', '/api/upload');
+                xhr.send(formData);
+            });
+        }
+        
+        function selectOneVideo(path) {
+            return fetch('/api/select_video', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ path: path })
+            }).then(res => res.json()).then(data => data.success ? path : null);
+        }
+        
+        async function processBatchImport(files) {
+            const total = files.length;
+            addLog(`Importação em lote: ${total} arquivo(s).`, 'info');
+            updateProgress('Importando lote...', 0);
+            batchQueue = [];
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const safeName = sanitizeFilename(file.name);
+                updateProgress(`Importando ${i + 1}/${total}: ${safeName}`, (i / total) * 100);
+                try {
+                    const existing = await selectOneVideo(safeName);
+                    if (existing) {
+                        batchQueue.push(existing);
+                        addLog(`  [${i + 1}/${total}] Já no workspace: ${safeName}`, 'success');
+                    } else {
+                        const path = await uploadOneVideo(file);
+                        batchQueue.push(path);
+                        addLog(`  [${i + 1}/${total}] Copiado: ${safeName}`, 'success');
+                    }
+                } catch (err) {
+                    addLog(`  [${i + 1}/${total}] Erro: ${safeName} — ${err.message}`, 'error');
+                }
+            }
+            updateProgress('Lote importado.', 100);
+            setTimeout(() => updateProgress('Aguardando início...', 0), 1500);
+            loadVideoList();
+            updateBatchQueueUI();
+            if (batchQueue.length > 0) {
+                selectedVideo = batchQueue[0];
+                updateSelectedVideo((batchQueue[0] || '').split('/').pop());
+                showNotification('Lote importado', `${batchQueue.length} arquivo(s) na fila. Use "Processar lote" para processar em sequência.`, 'success');
+            }
+        }
+        
+        function startBatchProcess(mode) {
+            if (batchQueue.length === 0 || isProcessing || batchMode) return;
+            processingCancelledByUser = false;
+            batchMode = mode;
+            batchIndex = 0;
+            isProcessing = true;
+            updateButtons();
+            processNextInBatch();
+        }
+        
+        function processNextInBatch() {
+            if (batchIndex >= batchQueue.length) {
+                batchMode = null;
+                batchQueue = [];
+                updateBatchQueueUI();
+                hideProcessingOverlay();
+                updateButtons();
+                showNotification('Lote concluído', 'Todos os arquivos foram processados.', 'success');
+                addLog('Lote concluído.', 'success');
+                return;
+            }
+            const path = batchQueue[batchIndex];
+            const name = (path || '').split('/').pop();
+            selectedVideo = path;
+            updateSelectedVideo(name);
+            updateExplorerSelection && updateExplorerSelection();
+            const n = batchIndex + 1;
+            const total = batchQueue.length;
+            updateProgress(`Lote ${n}/${total}: ${name}`, (batchIndex / total) * 100);
+            showProcessingOverlay(
+                batchMode === 'cut' ? '✂️ Lote — Corte' : batchMode === 'subtitle' ? '📝 Lote — Legendas' : '⚡ Lote — Processo completo',
+                `${n}/${total}: ${name}`,
+                {
+                    stepName: 'Iniciando...',
+                    stepPercent: 0,
+                    processed: batchIndex,
+                    remaining: total - batchIndex - 1,
+                    total: total,
+                    percentLote: total > 0 ? (batchIndex / total) * 100 : 0
+                }
+            );
+            fetch('/api/select_video', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ path: path })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (!data.success) {
+                    addLog(`Erro ao selecionar ${name}`, 'error');
+                    batchIndex++;
+                    setTimeout(processNextInBatch, 500);
+                    return;
+                }
+                if (batchMode === 'cut') {
+                    const settings = getSettings();
+                    return fetch('/api/process/remove_silence', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            method: settings.cut_method,
+                            padding: settings.padding,
+                            min_silence: settings.min_silence,
+                            word_threshold: settings.word_threshold
+                        })
+                    }).then(() => {});
+                } else if (batchMode === 'subtitle') {
+                    const settings = getSettings();
+                    return fetch('/api/process/add_subtitles', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(settings)
+                    }).then(() => {});
+                } else {
+                    const settings = getSettings();
+                    return fetch('/api/process/full', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(settings)
+                    }).then(() => {});
+                }
+            })
+            .catch(err => {
+                addLog(`Erro no lote: ${err.message}`, 'error');
+                batchIndex++;
+                setTimeout(processNextInBatch, 500);
+            });
         }
         
         function uploadVideo(file) {
@@ -3206,75 +4791,109 @@
             clearTimeout(previewDebounceTimer);
             previewDebounceTimer = setTimeout(() => {
                 updateSubtitlePreview();
-            }, 500);
+            }, 350);
         }
 
         function openSubtitleConfigModal() {
-            if (!selectedVideo) {
-                showNotification('Atenção', 'Selecione um vídeo primeiro!', 'error');
+            if (!selectedVideo && (!selectedForBatch || selectedForBatch.size === 0)) {
+                showNotification('Atenção', 'Clique em um vídeo para selecioná-lo ou marque vários (checkbox) e use "Processar lote".', 'error');
                 return;
             }
             document.getElementById('subtitleConfigModal').classList.add('active');
+
+            // Tabs: click handler + auto preview ao trocar de aba
+            document.querySelectorAll('.subtitle-config-tabs .tab-btn').forEach(btn => {
+                btn.onclick = () => {
+                    const tabId = btn.getAttribute('data-tab');
+                    document.querySelectorAll('.subtitle-config-tabs .tab-btn').forEach(b => b.classList.remove('active'));
+                    document.querySelectorAll('.subtitle-config-tab-content').forEach(c => c.classList.remove('active'));
+                    btn.classList.add('active');
+                    const panel = document.getElementById('tab-' + tabId);
+                    if (panel) panel.classList.add('active');
+                    if (getPreviewVideoPath()) debouncedUpdatePreview();
+                };
+            });
             
             // Listeners for color inputs
-            ['subHighlightColor', 'subTextColor', 'subOutlineColor'].forEach(id => {
+            ['subHighlightColor', 'subTextColor', 'subOutlineColor', 'subBgColor'].forEach(id => {
                 const el = document.getElementById(id);
                 const valEl = document.getElementById(id + 'Val');
-                
-                // Remove listener anterior para evitar duplicação se abrir/fechar várias vezes
+                if (!el || !valEl) return;
                 el.oninput = null;
-                
                 el.oninput = (e) => {
                     valEl.textContent = e.target.value;
                     debouncedUpdatePreview();
                 };
-                // Init value
                 valEl.textContent = el.value;
             });
             
-            // Listeners for sliders
+            // Sliders
             const hwRange = document.getElementById('highlightWidthRange');
             const hwVal = document.getElementById('highlightWidthValue');
-            if(hwRange) {
-                hwRange.oninput = null;
-                hwRange.oninput = (e) => {
-                    hwVal.textContent = e.target.value;
-                    debouncedUpdatePreview();
-                };
+            if (hwRange && hwVal) {
+                hwRange.oninput = (e) => { hwVal.textContent = e.target.value; debouncedUpdatePreview(); };
                 hwVal.textContent = hwRange.value;
             }
-            
             const owRange = document.getElementById('outlineWidthRange');
             const owVal = document.getElementById('outlineWidthValue');
-            if(owRange) {
-                owRange.oninput = null;
-                owRange.oninput = (e) => {
-                    owVal.textContent = e.target.value;
-                    debouncedUpdatePreview();
-                };
+            if (owRange && owVal) {
+                owRange.oninput = (e) => { owVal.textContent = e.target.value; debouncedUpdatePreview(); };
                 owVal.textContent = owRange.value;
             }
-
             const fsRange = document.getElementById('fontSizeRange');
             const fsVal = document.getElementById('fontSizeValue');
-            if(fsRange) {
-                fsRange.oninput = null;
-                fsRange.oninput = (e) => {
-                    fsVal.textContent = e.target.value + 'pt';
-                    debouncedUpdatePreview();
-                };
+            if (fsRange && fsVal) {
+                fsRange.oninput = (e) => { fsVal.textContent = e.target.value + 'pt'; debouncedUpdatePreview(); };
                 fsVal.textContent = fsRange.value + 'pt';
+            }
+            const fontOpacityRange = document.getElementById('fontOpacityRange');
+            const fontOpacityVal = document.getElementById('fontOpacityValue');
+            if (fontOpacityRange && fontOpacityVal) {
+                fontOpacityRange.oninput = (e) => { fontOpacityVal.textContent = e.target.value + '%'; debouncedUpdatePreview(); };
+                fontOpacityVal.textContent = fontOpacityRange.value + '%';
+            }
+            const subBgOpacityRange = document.getElementById('subBgOpacityRange');
+            const subBgOpacityVal = document.getElementById('subBgOpacityValue');
+            if (subBgOpacityRange && subBgOpacityVal) {
+                subBgOpacityRange.oninput = (e) => { subBgOpacityVal.textContent = e.target.value + '%'; debouncedUpdatePreview(); };
+                subBgOpacityVal.textContent = subBgOpacityRange.value + '%';
             }
 
             const fontSel = document.getElementById('fontSelector');
-            if(fontSel) {
-                fontSel.onchange = null;
-                fontSel.onchange = () => debouncedUpdatePreview();
+            if (fontSel) fontSel.onchange = () => debouncedUpdatePreview();
+            const fontWeightSelect = document.getElementById('fontWeightSelect');
+            if (fontWeightSelect) fontWeightSelect.onchange = () => debouncedUpdatePreview();
+            const fontCaseSelect = document.getElementById('fontCaseSelect');
+            if (fontCaseSelect) fontCaseSelect.onchange = () => debouncedUpdatePreview();
+            document.querySelectorAll('input[name="subTitleModel"]').forEach(r => {
+                r.onchange = () => debouncedUpdatePreview();
+            });
+
+            const customFontUpload = document.getElementById('customFontUpload');
+            if (customFontUpload) {
+                customFontUpload.onchange = (e) => {
+                    const f = e.target.files && e.target.files[0];
+                    const nameEl = document.getElementById('customFontName');
+                    if (nameEl) nameEl.textContent = f ? f.name : '';
+                    debouncedUpdatePreview();
+                };
             }
+            const customFontUploadBtn = document.getElementById('customFontUploadBtn');
+            if (customFontUploadBtn) {
+                customFontUploadBtn.onclick = uploadCustomFontToSystem;
+            }
+            const subtitlePreviewZoom = document.getElementById('subtitlePreviewZoom');
+            if (subtitlePreviewZoom) {
+                subtitlePreviewZoom.onchange = () => {
+                    applySubtitlePreviewZoom();
+                    scrollSubtitlePreviewToLegend();
+                };
+            }
+            initSubtitlePositionDrag();
+            loadFontsList();
             
             lucide.createIcons();
             
-            // Auto update preview on first open if empty
             const img = document.getElementById('subtitlePreviewImg');
             if (!img.src || img.style.display === 'none' || img.src.endsWith('undefined')) {
                 updateSubtitlePreview();
@@ -3283,6 +4902,88 @@
 
         function hideSubtitleConfigModal() {
             document.getElementById('subtitleConfigModal').classList.remove('active');
+        }
+
+        const SYSTEM_FONTS = [
+            { value: 'Prohibition', label: 'Prohibition (Padrão)' },
+            { value: 'Arial', label: 'Arial' },
+            { value: 'Arial Black', label: 'Arial Black' },
+            { value: 'Montserrat', label: 'Montserrat' },
+            { value: 'Roboto', label: 'Roboto' },
+            { value: 'Helvetica', label: 'Helvetica' },
+            { value: 'Verdana', label: 'Verdana' },
+            { value: 'Impact', label: 'Impact' },
+            { value: 'Courier New', label: 'Courier New' },
+            { value: 'Times New Roman', label: 'Times New Roman' }
+        ];
+
+        function loadFontsList() {
+            const sel = document.getElementById('fontSelector');
+            if (!sel) return;
+            fetch('/api/fonts/list')
+                .then(res => res.json())
+                .then(data => {
+                    if (!data.success) return;
+                    const currentVal = sel.value;
+                    sel.innerHTML = '';
+                    SYSTEM_FONTS.forEach(f => {
+                        const opt = document.createElement('option');
+                        opt.value = f.value;
+                        opt.textContent = f.label;
+                        if (f.value === 'Prohibition') opt.selected = true;
+                        sel.appendChild(opt);
+                    });
+                    (data.custom || []).forEach(f => {
+                        const opt = document.createElement('option');
+                        opt.value = f.name;
+                        opt.textContent = f.name + ' (custom)';
+                        sel.appendChild(opt);
+                    });
+                    if (currentVal) {
+                        const found = sel.querySelector(`option[value="${currentVal}"]`);
+                        if (found) sel.value = currentVal;
+                    }
+                })
+                .catch(() => {});
+        }
+
+        function uploadCustomFontToSystem() {
+            const input = document.getElementById('customFontUpload');
+            const nameEl = document.getElementById('customFontName');
+            const btn = document.getElementById('customFontUploadBtn');
+            if (!input || !input.files || !input.files[0]) {
+                showNotification('Atenção', 'Selecione um arquivo de fonte (.ttf, .otf, .woff, .woff2) antes de enviar.', 'error');
+                return;
+            }
+            const file = input.files[0];
+            const formData = new FormData();
+            formData.append('font', file);
+            if (btn) btn.disabled = true;
+            fetch('/api/fonts/upload', { method: 'POST', body: formData })
+                .then(res => res.json())
+                .then(data => {
+                    if (btn) btn.disabled = false;
+                    if (data.success) {
+                        const sel = document.getElementById('fontSelector');
+                        if (sel) {
+                            const opt = document.createElement('option');
+                            opt.value = data.font_name;
+                            opt.textContent = data.font_name + ' (custom)';
+                            sel.appendChild(opt);
+                            sel.value = data.font_name;
+                        }
+                        input.value = '';
+                        if (nameEl) nameEl.textContent = '';
+                        showNotification('Fonte instalada', `"${data.font_name}" foi adicionada à lista e selecionada.`, 'success');
+                        debouncedUpdatePreview();
+                    } else {
+                        showNotification('Erro no upload', data.error || 'Falha ao enviar fonte.', 'error');
+                    }
+                })
+                .catch(err => {
+                    if (btn) btn.disabled = false;
+                    showNotification('Erro', 'Falha de conexão ao enviar fonte.', 'error');
+                });
         }
 
         // ========== SUBTITLE EDITOR ==========
@@ -3465,34 +5166,145 @@
                 });
         }
 
+        function getPreviewVideoPath() {
+            if (selectedForBatch && selectedForBatch.size > 0) {
+                const first = Array.from(selectedForBatch)[0];
+                return first || null;
+            }
+            return selectedVideo || null;
+        }
+
+        function applySubtitlePreviewZoom() {
+            const img = document.getElementById('subtitlePreviewImg');
+            const inner = document.getElementById('subtitlePreviewInner');
+            const zoomEl = document.getElementById('subtitlePreviewZoom');
+            if (!img || !inner || !zoomEl || !img.naturalWidth) return;
+            const zoom = parseInt(zoomEl.value, 10) / 100;
+            const w = Math.round(img.naturalWidth * zoom);
+            const h = Math.round(img.naturalHeight * zoom);
+            inner.style.width = w + 'px';
+            inner.style.height = h + 'px';
+            img.style.width = w + 'px';
+            img.style.height = h + 'px';
+        }
+
+        function scrollSubtitlePreviewToLegend() {
+            const scrollEl = document.getElementById('subtitlePreviewScroll');
+            if (!scrollEl) return;
+            requestAnimationFrame(() => {
+                if (scrollEl.scrollHeight <= scrollEl.clientHeight) return;
+                scrollEl.scrollTop = scrollEl.scrollHeight - scrollEl.clientHeight;
+            });
+        }
+
+        const SUBTITLE_POSITION_DEFAULT = { x: 50, y: 92 };
+        function setSubtitlePositionUI(xPercent, yPercent) {
+            const mock = document.getElementById('subtitlePositionMock');
+            const stage = document.getElementById('subtitlePositionStage');
+            const xEl = document.getElementById('subPosX');
+            const yEl = document.getElementById('subPosY');
+            const xValEl = document.getElementById('subtitlePosXVal');
+            const yValEl = document.getElementById('subtitlePosYVal');
+            if (!mock || !stage || !xEl || !yEl) return;
+            xEl.value = Math.round(xPercent);
+            yEl.value = Math.round(yPercent);
+            if (xValEl) xValEl.textContent = Math.round(xPercent);
+            if (yValEl) yValEl.textContent = Math.round(yPercent);
+            mock.style.left = xPercent + '%';
+            mock.style.top = yPercent + '%';
+            mock.style.transform = 'translate(-50%, -100%)';
+        }
+
+        function initSubtitlePositionDrag() {
+            const mock = document.getElementById('subtitlePositionMock');
+            const stage = document.getElementById('subtitlePositionStage');
+            const defaultBtn = document.getElementById('subtitlePositionDefaultBtn');
+            if (!mock || !stage) return;
+            const xEl = document.getElementById('subPosX');
+            const yEl = document.getElementById('subPosY');
+            const startVal = { x: parseInt(xEl && xEl.value ? xEl.value : 50, 10), y: parseInt(yEl && yEl.value ? yEl.value : 92, 10) };
+            setSubtitlePositionUI(startVal.x, startVal.y);
+
+            defaultBtn && (defaultBtn.onclick = () => {
+                setSubtitlePositionUI(SUBTITLE_POSITION_DEFAULT.x, SUBTITLE_POSITION_DEFAULT.y);
+                debouncedUpdatePreview();
+            });
+
+            let dragging = false;
+            const onMove = (e) => {
+                if (!dragging || !stage) return;
+                const rect = stage.getBoundingClientRect();
+                const x = ((e.clientX - rect.left) / rect.width) * 100;
+                const y = ((e.clientY - rect.top) / rect.height) * 100;
+                const xClamp = Math.max(0, Math.min(100, x));
+                const yClamp = Math.max(0, Math.min(100, y));
+                setSubtitlePositionUI(xClamp, yClamp);
+                debouncedUpdatePreview();
+            };
+            const onUp = () => {
+                if (dragging) {
+                    dragging = false;
+                    mock.style.cursor = 'grab';
+                }
+                document.removeEventListener('mousemove', onMove);
+                document.removeEventListener('mouseup', onUp);
+            };
+            mock.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                dragging = true;
+                mock.style.cursor = 'grabbing';
+                document.addEventListener('mousemove', onMove);
+                document.addEventListener('mouseup', onUp);
+            });
+        }
+
         function updateSubtitlePreview() {
-            if (!selectedVideo) return;
-            
-            const highlight = document.getElementById('subHighlightColor').value;
-            const text = document.getElementById('subTextColor').value;
-            const outline = document.getElementById('subOutlineColor').value;
-            const highlightWidth = document.getElementById('highlightWidthRange').value;
-            const outlineWidth = document.getElementById('outlineWidthRange').value;
-            const fontName = document.getElementById('fontSelector').value;
-            const fontSize = document.getElementById('fontSizeRange').value;
+            const videoPath = getPreviewVideoPath();
+            if (!videoPath) {
+                showNotification('Atenção', 'Selecione ao menos um vídeo para ver o preview.', 'error');
+                return;
+            }
+            const highlight = document.getElementById('subHighlightColor') && document.getElementById('subHighlightColor').value;
+            const text = document.getElementById('subTextColor') && document.getElementById('subTextColor').value;
+            const outline = document.getElementById('subOutlineColor') && document.getElementById('subOutlineColor').value;
+            const highlightWidth = document.getElementById('highlightWidthRange') && document.getElementById('highlightWidthRange').value;
+            const outlineWidth = document.getElementById('outlineWidthRange') && document.getElementById('outlineWidthRange').value;
+            const fontName = document.getElementById('fontSelector') && document.getElementById('fontSelector').value;
+            const fontSize = document.getElementById('fontSizeRange') && document.getElementById('fontSizeRange').value;
             
             document.getElementById('subtitlePreviewLoading').style.display = 'flex';
+            
+            const subPosXEl = document.getElementById('subPosX');
+            const subPosYEl = document.getElementById('subPosY');
+            const sub_x = subPosXEl ? parseFloat(subPosXEl.value) || 50 : 50;
+            const sub_y = subPosYEl ? parseFloat(subPosYEl.value) || 92 : 92;
+            const body = {
+                highlight_color: highlight,
+                text_color: text,
+                outline_color: outline,
+                highlight_width: highlightWidth,
+                outline_width: outlineWidth,
+                font_name: fontName,
+                font_size: fontSize,
+                video_path: videoPath,
+                sub_x_percent: sub_x,
+                sub_y_percent: sub_y
+            };
             
             fetch('/api/process/preview_subtitle', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    highlight_color: highlight,
-                    text_color: text,
-                    outline_color: outline,
-                    highlight_width: highlightWidth,
-                    outline_width: outlineWidth,
-                    font_name: fontName,
-                    font_size: fontSize
-                })
+                body: JSON.stringify(body)
             })
-            .then(res => {
-                if (!res.ok) throw new Error('Falha no preview');
+            .then(async (res) => {
+                if (!res.ok) {
+                    let msg = 'Falha ao gerar preview. Verifique se o vídeo é válido.';
+                    try {
+                        const data = await res.json();
+                        if (data && data.error) msg = data.error;
+                    } catch (_) {}
+                    throw new Error(msg);
+                }
                 return res.blob();
             })
             .then(blob => {
@@ -3502,13 +5314,14 @@
                     document.getElementById('subtitlePreviewLoading').style.display = 'none';
                     img.style.display = 'block';
                     document.getElementById('subtitlePreviewPlaceholder').style.display = 'none';
+                    applySubtitlePreviewZoom();
+                    scrollSubtitlePreviewToLegend();
                 };
                 img.src = url;
             })
             .catch(err => {
-                console.error(err);
                 document.getElementById('subtitlePreviewLoading').style.display = 'none';
-                showNotification('Erro', 'Falha ao gerar preview. Verifique se o vídeo é válido.', 'error');
+                showNotification('Erro no preview', err.message || 'Falha ao gerar preview.', 'error');
             });
         }
 
@@ -3517,16 +5330,90 @@
             processAddSubtitles();
         }
 
-        function getSettings() {
-            const highlight = document.getElementById('subHighlightColor') ? document.getElementById('subHighlightColor').value : '#ff4500';
-            const text = document.getElementById('subTextColor') ? document.getElementById('subTextColor').value : '#ffffff';
-            const outline = document.getElementById('subOutlineColor') ? document.getElementById('subOutlineColor').value : '#000000';
-            const highlightWidth = document.getElementById('highlightWidthRange') ? document.getElementById('highlightWidthRange').value : 5;
-            const outlineWidth = document.getElementById('outlineWidthRange') ? document.getElementById('outlineWidthRange').value : 1.5;
-            const fontName = document.getElementById('fontSelector') ? document.getElementById('fontSelector').value : 'Prohibition';
-            const fontSize = document.getElementById('fontSizeRange') ? document.getElementById('fontSizeRange').value : 10;
-            const previewMode = document.getElementById('previewModeCheckbox') ? document.getElementById('previewModeCheckbox').checked : false;
+        const CUT_PRESETS = {
+            agressivo:  { padding: 0.18, min_silence: 0.30, word_threshold: 0.30, preview: '✔ cortes rápidos ✔ pausas removidas ✔ tutorial/vendas' },
+            reels:      { padding: 0.30, min_silence: 0.45, word_threshold: 0.28, preview: '✔ cortes rápidos ✔ ritmo acelerado ✔ pausas mínimas' },
+            youtube:    { padding: 0.45, min_silence: 0.70, word_threshold: 0.25, preview: '✔ ritmo mantido ✔ pausas curtas ✔ conteúdo direto' },
+            natural:    { padding: 0.55, min_silence: 0.90, word_threshold: 0.25, preview: '✔ pausas naturais ✔ cortes suaves ✔ ritmo médio' },
+            podcast:    { padding: 0.65, min_silence: 1.10, word_threshold: 0.22, preview: '✔ respiração preservada ✔ pausas naturais ✔ conversa' }
+        };
 
+        const OPTIONS_STORAGE_KEY = 'autoEdit_userOptions';
+        function saveUserOptions() {
+            try {
+                const activePreset = document.querySelector('.preset-btn.preset-active');
+                const opt = {
+                    optionRemoveSilence: document.getElementById('optionRemoveSilence')?.checked ?? false,
+                    optionAddSubtitles: document.getElementById('optionAddSubtitles')?.checked ?? false,
+                    useAI: document.getElementById('useAI')?.checked ?? true,
+                    cutPreset: (activePreset && activePreset.getAttribute('data-preset')) || 'reels',
+                    whisperModel: document.getElementById('whisperModel')?.value || 'small',
+                    cutMethod: document.getElementById('cutMethod')?.value || 'speech',
+                    language: document.getElementById('language')?.value || 'pt'
+                };
+                localStorage.setItem(OPTIONS_STORAGE_KEY, JSON.stringify(opt));
+            } catch (e) { /* ignore */ }
+        }
+        function loadUserOptions() {
+            try {
+                const raw = localStorage.getItem(OPTIONS_STORAGE_KEY);
+                if (!raw) return null;
+                return JSON.parse(raw);
+            } catch (e) { return null; }
+        }
+
+        function applyCutPreset(presetId) {
+            const preset = CUT_PRESETS[presetId];
+            if (!preset) return;
+            const paddingRange = document.getElementById('paddingRange');
+            const minSilenceRange = document.getElementById('minSilenceRange');
+            const wordThresholdRange = document.getElementById('wordThresholdRange');
+            const paddingValue = document.getElementById('paddingValue');
+            const minSilenceValue = document.getElementById('minSilenceValue');
+            const wordThresholdValue = document.getElementById('wordThresholdValue');
+            const cutPreviewText = document.getElementById('cutPreviewText');
+            if (paddingRange) { paddingRange.value = preset.padding; }
+            if (minSilenceRange) { minSilenceRange.value = preset.min_silence; }
+            if (wordThresholdRange) { wordThresholdRange.value = preset.word_threshold; }
+            if (paddingValue) paddingValue.textContent = preset.padding + 's';
+            if (minSilenceValue) minSilenceValue.textContent = preset.min_silence + 's';
+            if (wordThresholdValue) wordThresholdValue.textContent = preset.word_threshold.toFixed(2);
+            if (cutPreviewText) cutPreviewText.textContent = preset.preview;
+            document.querySelectorAll('.preset-btn').forEach(btn => {
+                btn.classList.toggle('preset-active', btn.getAttribute('data-preset') === presetId);
+            });
+            if (typeof saveUserOptions === 'function') saveUserOptions();
+        }
+
+        function getSettings() {
+            const get = (id, def) => { const el = document.getElementById(id); return el ? el.value : def; };
+            const getChecked = (id, def) => { const el = document.getElementById(id); return el ? el.checked : def; };
+            const modelRadios = document.querySelectorAll('input[name="subTitleModel"]');
+            let subtitle_model = 'traditional';
+            modelRadios.forEach(r => { if (r.checked) subtitle_model = r.value; });
+
+            const highlight = get('subHighlightColor', '#ff4500');
+            const text = get('subTextColor', '#ffffff');
+            const outline = get('subOutlineColor', '#000000');
+            const highlightWidth = get('highlightWidthRange', '5');
+            const outlineWidth = get('outlineWidthRange', '1.5');
+            const fontName = get('fontSelector', 'Prohibition');
+            const fontSize = get('fontSizeRange', '10');
+            const previewMode = getChecked('previewModeCheckbox', false);
+            const fontOpacity = get('fontOpacityRange', '100');
+            const fontWeight = (document.getElementById('fontWeightSelect') && document.getElementById('fontWeightSelect').value) || 'normal';
+            const fontCase = (document.getElementById('fontCaseSelect') && document.getElementById('fontCaseSelect').value) || 'Tt';
+            const bgColor = get('subBgColor', '#000000');
+            const bgOpacity = get('subBgOpacityRange', '0');
+            const customFontEl = document.getElementById('customFontUpload');
+            const custom_font_name = (customFontEl && customFontEl.files && customFontEl.files[0]) ? customFontEl.files[0].name : null;
+            const subPosXEl = document.getElementById('subPosX');
+            const subPosYEl = document.getElementById('subPosY');
+            const sub_x_percent = subPosXEl ? parseFloat(subPosXEl.value) || 50 : 50;
+            const sub_y_percent = subPosYEl ? parseFloat(subPosYEl.value) || 92 : 92;
+
+            const wordThresholdEl = document.getElementById('wordThresholdRange');
+            const word_threshold = wordThresholdEl ? parseFloat(wordThresholdEl.value) : 0.25;
             return {
                 model: document.getElementById('whisperModel').value,
                 cut_method: document.getElementById('cutMethod').value,
@@ -3534,6 +5421,8 @@
                 use_ai: document.getElementById('useAI').checked,
                 padding: parseFloat(document.getElementById('paddingRange').value),
                 min_silence: parseFloat(document.getElementById('minSilenceRange').value),
+                word_threshold: word_threshold,
+                subtitle_model: subtitle_model,
                 highlight_color: highlight,
                 text_color: text,
                 outline_color: outline,
@@ -3541,18 +5430,65 @@
                 outline_width: outlineWidth,
                 font_name: fontName,
                 font_size: fontSize,
+                font_opacity: fontOpacity,
+                font_weight: fontWeight,
+                font_case: fontCase,
+                bg_color: bgColor,
+                bg_opacity: bgOpacity,
+                custom_font_name: custom_font_name,
+                sub_x_percent: sub_x_percent,
+                sub_y_percent: sub_y_percent,
                 preview_mode: previewMode
             };
         }
         
-        function processRemoveSilence() {
+        function executeSelectedActions() {
+            if (isProcessing) return;
+            const cut = document.getElementById('optionRemoveSilence') && document.getElementById('optionRemoveSilence').checked;
+            const subs = document.getElementById('optionAddSubtitles') && document.getElementById('optionAddSubtitles').checked;
+            if (!cut && !subs) {
+                showNotification('Nenhuma ação', 'Marque pelo menos uma opção (Remover Silêncio ou Adicionar Legendas) e clique em Executar.', 'error');
+                return;
+            }
+            if (selectedForBatch.size > 0) {
+                addSelectedToBatch(true);
+                if (cut && subs) startBatchProcess('full');
+                else if (cut) startBatchProcess('cut');
+                else startBatchProcess('subtitle');
+                return;
+            }
             if (!selectedVideo) {
-                showNotification('Atenção', 'Selecione um vídeo primeiro!', 'error');
+                showNotification('Atenção', 'Selecione um vídeo ou marque vários (checkbox) e adicione à fila.', 'error');
+                return;
+            }
+            if (cut && subs) {
+                processFullPipeline();
+                return;
+            }
+            if (cut) {
+                processRemoveSilence();
+                return;
+            }
+            if (subs) {
+                processAddSubtitles();
+                return;
+            }
+        }
+
+        function processRemoveSilence() {
+            if (selectedForBatch.size > 0) {
+                addSelectedToBatch(true);
+                startBatchProcess('cut');
+                return;
+            }
+            if (!selectedVideo) {
+                showNotification('Atenção', 'Selecione um ou mais vídeos (checkbox) ou adicione à fila primeiro.', 'error');
                 return;
             }
             
             if (isProcessing) return;
             
+            processingCancelledByUser = false;
             isProcessing = true;
             updateButtons();
             showProcessingOverlay('✂️ Removendo Silêncio', 'Analisando áudio do vídeo...');
@@ -3566,7 +5502,8 @@
                 body: JSON.stringify({ 
                     method: settings.cut_method,
                     padding: settings.padding,
-                    min_silence: settings.min_silence
+                    min_silence: settings.min_silence,
+                    word_threshold: settings.word_threshold
                 })
             })
             .then(res => res.json())
@@ -3588,6 +5525,7 @@
             
             if (isProcessing) return;
             
+            processingCancelledByUser = false;
             isProcessing = true;
             updateButtons();
             showProcessingOverlay('📝 Gerando Legendas', 'Carregando modelo Whisper...');
@@ -3612,13 +5550,19 @@
         }
         
         function processFullPipeline() {
+            if (selectedForBatch.size > 0) {
+                addSelectedToBatch(true);
+                startBatchProcess('full');
+                return;
+            }
             if (!selectedVideo) {
-                showNotification('Atenção', 'Selecione um vídeo primeiro!', 'error');
+                showNotification('Atenção', 'Selecione um ou mais vídeos (checkbox) ou adicione à fila primeiro.', 'error');
                 return;
             }
             
             if (isProcessing) return;
             
+            processingCancelledByUser = false;
             isProcessing = true;
             updateButtons();
             showProcessingOverlay('⚡ Processo Completo', 'Iniciando pipeline de edição...');

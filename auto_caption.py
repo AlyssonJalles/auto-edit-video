@@ -77,13 +77,18 @@ def interpolate_words(text, start, end):
         
     return result
 
-def gerar_ass_capcut(segments, ass_path: str, highlight_color=None, text_color=None, outline_color=None, highlight_width=5.0, outline_width=1.5, font_name="Prohibition", font_size=10):
+def gerar_ass_capcut(segments, ass_path: str, highlight_color=None, text_color=None, outline_color=None, highlight_width=5.0, outline_width=1.5, font_name="Prohibition", font_size=10, sub_x_percent=None, sub_y_percent=None, play_res_x=640, play_res_y=360):
     """
     Gera um arquivo .ass com legendas dinâmicas, RESPEITANDO OS SEGMENTOS.
+    sub_x_percent, sub_y_percent: 0-100, posição da legenda (centro do bloco). Se None, usa estilo padrão (marginv, alignment).
+    play_res_x, play_res_y: resolução do script para \pos (usado quando sub_x_percent/sub_y_percent são fornecidos).
     """
     print(f"[3/3] Gerando arquivo de legenda ASS em {ass_path}...")
 
     subs = pysubs2.SSAFile()
+    if play_res_x and play_res_y:
+        subs.info["PlayResX"] = str(play_res_x)
+        subs.info["PlayResY"] = str(play_res_y)
 
     # CORES E ESTILOS (Ajuste Fino)
     HIGHLIGHT_COLOR = highlight_color if highlight_color else "&H0045FF&" 
@@ -159,6 +164,12 @@ def gerar_ass_capcut(segments, ass_path: str, highlight_color=None, text_color=N
                     display_parts.append(text_part)
             
             final_text = " ".join(display_parts)
+
+            # Posição customizada: \pos(x,y) em pixels (resolução do script)
+            if sub_x_percent is not None and sub_y_percent is not None:
+                pos_x = int((float(sub_x_percent) / 100.0) * play_res_x)
+                pos_y = int((float(sub_y_percent) / 100.0) * play_res_y)
+                final_text = f"{{\\pos({pos_x},{pos_y})}}" + final_text
 
             # Ajuste para evitar flicker entre palavras
             # Se não for a última palavra, estica até a próxima

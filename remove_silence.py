@@ -4,6 +4,7 @@ import subprocess
 import re
 import sys
 import os
+import time
 import whisper
 
 def detect_speech_intervals(input_file, model_name="tiny", language="pt", padding=0.25, min_silence=0.5, word_threshold=0.3):
@@ -131,23 +132,31 @@ def detect_silence_ffmpeg(input_file, threshold_db=-40, min_duration=0.5):
     return keep_intervals
 
 
-def remover_silencio(input_file, output_file, method="speech", threshold_db=-40, min_duration=0.5, padding=0.25):
+def remover_silencio(input_file, output_file, method="speech", threshold_db=-40, min_duration=0.5, padding=0.25, word_threshold=0.25, get_cancelled=None):
     """
     Orquestrador de remoção de silêncio.
     method: 'speech' (Whisper) ou 'volume' (ffmpeg)
+    get_cancelled: callable() -> bool; se retornar True, interrompe e retorna False.
     """
+    if get_cancelled and get_cancelled():
+        print("[Corte] Cancelado pelo usuário antes de iniciar.")
+        return False
     print(f"[Corte] Iniciando corte de silêncio em {input_file} usando método: {method.upper()}...")
     
     keep_intervals = []
     
     if method == "speech":
         # Usa Whisper (mais inteligente, ignora ruído)
-        # Usamos modelo 'tiny' ou 'base' aqui para ser rápido, já que é só para cortar
-        keep_intervals = detect_speech_intervals(input_file, model_name="base", min_silence=min_duration, padding=padding)
+        if get_cancelled and get_cancelled():
+            return False
+        keep_intervals = detect_speech_intervals(input_file, model_name="base", min_silence=min_duration, padding=padding, word_threshold=word_threshold)
     else:
         # Usa Volume (mais rápido, mas pode pegar respiração/ruído)
         keep_intervals = detect_silence_ffmpeg(input_file, threshold_db, min_duration)
 
+    if get_cancelled and get_cancelled():
+        print("[Corte] Cancelado pelo usuário após análise.")
+        return False
     if not keep_intervals:
         print("Nenhum intervalo válido encontrado para manter. Abortando.")
         return False
@@ -155,10 +164,6 @@ def remover_silencio(input_file, output_file, method="speech", threshold_db=-40,
     print(f"Mantendo {len(keep_intervals)} blocos de conteúdo.")
 
     # Gerar filter_complex para ffmpeg
-    # Atenção: Se houver MUITOS cortes (>100), filter_complex por linha de comando pode falhar no Windows/Shell.
-    # O ideal seria usar concat demuxer file, mas isso exige reencodar cada pedaço.
-    # Vamos manter filter_complex por enquanto.
-    
     filter_str = ""
     concat_str = ""
     
@@ -177,14 +182,29 @@ def remover_silencio(input_file, output_file, method="speech", threshold_db=-40,
         "-i", input_file,
         "-filter_complex", full_filter,
         "-map", "[outv]", "-map", "[outa]",
-        # Encoding preset rápido para não demorar anos
         "-c:v", "libx264", "-preset", "fast", "-crf", "23", 
         "-c:a", "aac", "-b:a", "192k",
         output_file
     ]
     
     try:
-        subprocess.run(cmd, check=True)
+        if get_cancelled:
+            proc = subprocess.Popen(cmd)
+            while proc.poll() is None:
+                time.sleep(0.5)
+                if get_cancelled():
+                    proc.terminate()
+                    try:
+                        proc.wait(timeout=5)
+                    except subprocess.TimeoutExpired:
+                        proc.kill()
+                    print("[Corte] Cancelado pelo usuário durante renderização.")
+                    return False
+            if proc.returncode != 0:
+                print(f"Erro ao cortar vídeo (código {proc.returncode})")
+                return False
+        else:
+            subprocess.run(cmd, check=True)
         print(f"Vídeo cortado salvo em: {output_file}")
         return True
     except subprocess.CalledProcessError as e:
