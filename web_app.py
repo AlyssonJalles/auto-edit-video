@@ -11,6 +11,7 @@ Uma ferramenta poderosa para edição automática de vídeos com IA
 import os
 import sys
 import glob
+import shutil
 import threading
 import json
 import time
@@ -85,6 +86,37 @@ def get_output_path(input_path: str, suffix: str) -> str:
     output_filename = f"{base}{suffix}{ext}"
     
     return str(PROCESSED_DIR / output_filename)
+
+
+def ensure_video_and_sidecars_in_processados(video_path: str):
+    """
+    Garante que uma cópia do vídeo (e arquivos .json, .ass etc.) está na pasta processados.
+    Se o vídeo já estiver em processados, retorna o mesmo caminho. Caso contrário, copia
+    o vídeo e os sidecars para processados e atualiza app_state["selected_video"].
+    Retorna o caminho a ser usado (em processados) ou None em caso de erro.
+    """
+    if not video_path:
+        return None
+    is_valid, resolved_str = validate_video_path(video_path)
+    if not is_valid:
+        return None
+    resolved = Path(resolved_str).resolve()
+    processed_dir = PROCESSED_DIR.resolve()
+    try:
+        if processed_dir in resolved.parents or resolved.parent == processed_dir:
+            return str(resolved)
+        dest_video = processed_dir / resolved.name
+        shutil.copy2(resolved, dest_video)
+        base = resolved.stem
+        for ext in (".json", ".ass"):
+            sidecar = resolved.parent / (base + ext)
+            if sidecar.is_file():
+                shutil.copy2(sidecar, processed_dir / (base + ext))
+        app_state["selected_video"] = str(dest_video)
+        return str(dest_video)
+    except Exception:
+        return None
+
 
 # ==================== AUTENTICAÇÃO ====================
 # Se ACCESS_PASSWORD estiver definido, requer login
@@ -1237,6 +1269,10 @@ def process_remove_silence():
     if not app_state["selected_video"]:
         return jsonify({"success": False, "error": "Nenhum vídeo selecionado"}), 400
     
+    work_path = ensure_video_and_sidecars_in_processados(app_state["selected_video"])
+    if work_path is None:
+        return jsonify({"success": False, "error": "Não foi possível copiar o vídeo para a pasta processados"}), 400
+    
     data = request.json or {}
     method = data.get('method', 'speech')
     padding = float(data.get('padding', 0.25))
@@ -1276,10 +1312,12 @@ def process_remove_silence():
                 db.add_video_history(video_path, output_path, "remove_silence", True, file_size)
                 db.add_log(os.path.basename(video_path), "remove_silence", "success", f"Método: {method}", duration)
                 
+                app_state["selected_video"] = output_path
                 socketio.emit('process_complete', {
                     'success': True,
                     'output': output_path,
-                    'filename': os.path.basename(output_path)
+                    'filename': os.path.basename(output_path),
+                    'selected_video': output_path
                 })
             else:
                 emit_log("❌ Falha no processamento", "error")
@@ -1323,6 +1361,13 @@ def preview_subtitle():
     font_size = float(data.get('font_size', 10))
     sub_x_percent = data.get('sub_x_percent')
     sub_y_percent = data.get('sub_y_percent')
+    subtitle_model = data.get('subtitle_model', 'highlights')
+    font_opacity = data.get('font_opacity')
+    font_weight = data.get('font_weight', 'bold')
+    font_case = data.get('font_case', 'Tt')
+    bg_enabled = data.get('bg_enabled', False)
+    bg_color = data.get('bg_color')
+    bg_opacity = data.get('bg_opacity')
     if sub_x_percent is not None:
         sub_x_percent = float(sub_x_percent)
     if sub_y_percent is not None:
@@ -1385,7 +1430,14 @@ def preview_subtitle():
             sub_x_percent=sub_x_percent,
             sub_y_percent=sub_y_percent,
             play_res_x=640,
-            play_res_y=360
+            play_res_y=360,
+            subtitle_model=subtitle_model,
+            font_opacity=font_opacity,
+            font_weight=font_weight,
+            font_case=font_case,
+            bg_enabled=bg_enabled,
+            bg_color=bg_color,
+            bg_opacity=bg_opacity
         )
 
         # 3. Queima a legenda na imagem (frame do vídeo + ASS)
@@ -1435,6 +1487,10 @@ def process_add_subtitles():
     if not app_state["selected_video"]:
         return jsonify({"success": False, "error": "Nenhum vídeo selecionado"}), 400
     
+    work_path = ensure_video_and_sidecars_in_processados(app_state["selected_video"])
+    if work_path is None:
+        return jsonify({"success": False, "error": "Não foi possível copiar o vídeo para a pasta processados"}), 400
+    
     data = request.json or {}
     model = data.get('model', 'small')
     language = data.get('language', 'pt')
@@ -1448,7 +1504,19 @@ def process_add_subtitles():
     outline_width = float(data.get('outline_width', 1.5))
     font_name = data.get('font_name', 'Prohibition')
     font_size = float(data.get('font_size', 10))
+    subtitle_model = data.get('subtitle_model', 'highlights')
+    sub_x_percent = data.get('sub_x_percent')
+    sub_y_percent = data.get('sub_y_percent')
+    font_opacity = data.get('font_opacity')
+    font_weight = data.get('font_weight', 'bold')
+    font_case = data.get('font_case', 'Tt')
+    bg_color = data.get('bg_color')
+    bg_opacity = data.get('bg_opacity')
     preview_mode = data.get('preview_mode', False)
+    if sub_x_percent is not None:
+        sub_x_percent = float(sub_x_percent)
+    if sub_y_percent is not None:
+        sub_y_percent = float(sub_y_percent)
     
     def process():
         video_path = app_state["selected_video"]
@@ -1481,6 +1549,14 @@ def process_add_subtitles():
                 outline_width=outline_width,
                 font_name=font_name,
                 font_size=font_size,
+                subtitle_model=subtitle_model,
+                sub_x_percent=sub_x_percent,
+                sub_y_percent=sub_y_percent,
+                font_opacity=font_opacity,
+                font_weight=font_weight,
+                font_case=font_case,
+                bg_color=bg_color,
+                bg_opacity=bg_opacity,
                 only_generate=preview_mode
             )
             duration = time.time() - start_time
@@ -1501,10 +1577,12 @@ def process_add_subtitles():
                 db.add_video_history(video_path, output_path, "add_subtitles", True, file_size)
                 db.add_log(os.path.basename(video_path), "add_subtitles", "success", f"Modelo: {model}, Idioma: {language}", duration)
                 
+                app_state["selected_video"] = output_path
                 socketio.emit('process_complete', {
                     'success': True,
                     'output': output_path,
-                    'filename': os.path.basename(output_path)
+                    'filename': os.path.basename(output_path),
+                    'selected_video': output_path
                 })
             
         except Exception as e:
@@ -1560,6 +1638,19 @@ def save_subtitles():
     outline_width = float(data.get('outline_width', 1.5))
     font_name = data.get('font_name', 'Prohibition')
     font_size = float(data.get('font_size', 10))
+    subtitle_model = data.get('subtitle_model', 'highlights')
+    sub_x_percent = data.get('sub_x_percent')
+    sub_y_percent = data.get('sub_y_percent')
+    font_opacity = data.get('font_opacity')
+    font_weight = data.get('font_weight', 'bold')
+    font_case = data.get('font_case', 'Tt')
+    bg_enabled = data.get('bg_enabled', False)
+    bg_color = data.get('bg_color')
+    bg_opacity = data.get('bg_opacity')
+    if sub_x_percent is not None:
+        sub_x_percent = float(sub_x_percent)
+    if sub_y_percent is not None:
+        sub_y_percent = float(sub_y_percent)
     
     video_path = app_state["selected_video"]
     base, _ = os.path.splitext(video_path)
@@ -1574,7 +1665,7 @@ def save_subtitles():
         
         # 2. Regenera ASS
         gerar_ass_capcut(
-            segments, 
+            segments,
             ass_path,
             highlight_color=highlight_color,
             text_color=text_color,
@@ -1582,7 +1673,16 @@ def save_subtitles():
             highlight_width=highlight_width,
             outline_width=outline_width,
             font_name=font_name,
-            font_size=font_size
+            font_size=font_size,
+            sub_x_percent=sub_x_percent,
+            sub_y_percent=sub_y_percent,
+            subtitle_model=subtitle_model,
+            font_opacity=font_opacity,
+            font_weight=font_weight,
+            font_case=font_case,
+            bg_enabled=bg_enabled,
+            bg_color=bg_color,
+            bg_opacity=bg_opacity
         )
         
         return jsonify({"success": True, "message": "Legendas salvas e atualizadas"})
@@ -1658,6 +1758,10 @@ def process_full():
     if not app_state["selected_video"]:
         return jsonify({"success": False, "error": "Nenhum vídeo selecionado"}), 400
     
+    work_path = ensure_video_and_sidecars_in_processados(app_state["selected_video"])
+    if work_path is None:
+        return jsonify({"success": False, "error": "Não foi possível copiar o vídeo para a pasta processados"}), 400
+    
     data = request.json or {}
     model = data.get('model', 'small')
     language = data.get('language', 'pt')
@@ -1667,7 +1771,7 @@ def process_full():
     min_silence = float(data.get('min_silence', 0.5))
     word_threshold = float(data.get('word_threshold', 0.25))
     
-    # Configurações de estilo
+    # Configurações de estilo (mesmas do preview e add_subtitles)
     highlight_color = data.get('highlight_color')
     text_color = data.get('text_color')
     outline_color = data.get('outline_color')
@@ -1675,6 +1779,19 @@ def process_full():
     outline_width = float(data.get('outline_width', 1.5))
     font_name = data.get('font_name', 'Prohibition')
     font_size = float(data.get('font_size', 10))
+    subtitle_model = data.get('subtitle_model', 'highlights')
+    sub_x_percent = data.get('sub_x_percent')
+    sub_y_percent = data.get('sub_y_percent')
+    font_opacity = data.get('font_opacity')
+    font_weight = data.get('font_weight', 'bold')
+    font_case = data.get('font_case', 'Tt')
+    bg_enabled = data.get('bg_enabled', False)
+    bg_color = data.get('bg_color')
+    bg_opacity = data.get('bg_opacity')
+    if sub_x_percent is not None:
+        sub_x_percent = float(sub_x_percent)
+    if sub_y_percent is not None:
+        sub_y_percent = float(sub_y_percent)
     
     def process():
         video_path = app_state["selected_video"]
@@ -1705,7 +1822,7 @@ def process_full():
             
             video_to_caption = cut_path if success else video_path
             
-            # Passo 2: Legendar
+            # Passo 2: Legendar (mesmas opções do modal Configurar Legendas)
             emit_log("📌 Passo 2/2: Gerando legendas...", "info")
             emit_progress("Transcrevendo com Whisper...", 0.5)
             
@@ -1724,7 +1841,17 @@ def process_full():
                 highlight_width=highlight_width,
                 outline_width=outline_width,
                 font_name=font_name,
-                font_size=font_size
+                font_size=font_size,
+                subtitle_model=subtitle_model,
+                sub_x_percent=sub_x_percent,
+                sub_y_percent=sub_y_percent,
+                font_opacity=font_opacity,
+                font_weight=font_weight,
+                font_case=font_case,
+                bg_enabled=bg_enabled,
+                bg_color=bg_color,
+                bg_opacity=bg_opacity,
+                only_generate=False
             )
             
             duration = time.time() - start_time
@@ -1738,10 +1865,12 @@ def process_full():
             db.add_log(os.path.basename(video_path), "full_process", "success", 
                       f"Modelo: {model}, Método: {cut_method}, IA: {use_ai}", duration)
             
+            app_state["selected_video"] = final_path
             socketio.emit('process_complete', {
                 'success': True,
                 'output': final_path,
-                'filename': os.path.basename(final_path)
+                'filename': os.path.basename(final_path),
+                'selected_video': final_path
             })
             
         except Exception as e:

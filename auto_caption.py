@@ -77,11 +77,21 @@ def interpolate_words(text, start, end):
         
     return result
 
-def gerar_ass_capcut(segments, ass_path: str, highlight_color=None, text_color=None, outline_color=None, highlight_width=5.0, outline_width=1.5, font_name="Prohibition", font_size=10, sub_x_percent=None, sub_y_percent=None, play_res_x=640, play_res_y=360):
+def _hex_to_rgb(c):
+    """Converte #RRGGBB para (r, g, b) 0-255."""
+    if c and c.startswith('#') and len(c) == 7:
+        return (int(c[1:3], 16), int(c[3:5], 16), int(c[5:7], 16))
+    return (255, 255, 255)
+
+
+def gerar_ass_capcut(segments, ass_path: str, highlight_color=None, text_color=None, outline_color=None, highlight_width=5.0, outline_width=1.5, font_name="Prohibition", font_size=10, sub_x_percent=None, sub_y_percent=None, play_res_x=640, play_res_y=360, subtitle_model="highlights", font_opacity=100, font_weight="bold", font_case="Tt", bg_enabled=False, bg_color=None, bg_opacity=50):
     """
     Gera um arquivo .ass com legendas dinâmicas, RESPEITANDO OS SEGMENTOS.
     sub_x_percent, sub_y_percent: 0-100, posição da legenda (centro do bloco). Se None, usa estilo padrão (marginv, alignment).
-    play_res_x, play_res_y: resolução do script para \pos (usado quando sub_x_percent/sub_y_percent são fornecidos).
+    play_res_x, play_res_y: resolução do script para \\pos (usado quando sub_x_percent/sub_y_percent são fornecidos).
+    subtitle_model: "traditional" (sem highlight), "highlights" (karaokê com borda/destaque), "highlights2" (palavra a palavra na cor Destaque da fonte).
+    font_opacity: 0-100. font_weight: normal, bold, italic. font_case: TT, Tt, tt.
+    bg_enabled: ativa plano de fundo atrás do texto. bg_color: #RRGGBB. bg_opacity: 0-100 transparência (padrão 50% quando ativado).
     """
     print(f"[3/3] Gerando arquivo de legenda ASS em {ass_path}...")
 
@@ -91,7 +101,7 @@ def gerar_ass_capcut(segments, ass_path: str, highlight_color=None, text_color=N
         subs.info["PlayResY"] = str(play_res_y)
 
     # CORES E ESTILOS (Ajuste Fino)
-    HIGHLIGHT_COLOR = highlight_color if highlight_color else "&H0045FF&" 
+    HIGHLIGHT_COLOR = highlight_color if highlight_color else "&H0045FF&"
     BLACK_COLOR = outline_color if outline_color else "&H000000&"
     WHITE_COLOR = text_color if text_color else "&HFFFFFF&"
     
@@ -107,80 +117,146 @@ def gerar_ass_capcut(segments, ass_path: str, highlight_color=None, text_color=N
     BLACK_COLOR = to_ass_color(BLACK_COLOR)
     WHITE_COLOR = to_ass_color(WHITE_COLOR)
 
+    # Opacidade: ASS alpha 00=opaco, FF=transparente. font_opacity 100% -> alpha 0
+    try:
+        opacity_pct = float(font_opacity) if font_opacity is not None else 100
+    except (TypeError, ValueError):
+        opacity_pct = 100
+    opacity_pct = max(0, min(100, opacity_pct))
+    primary_alpha = int((100 - opacity_pct) * 255 / 100)
+    # Plano de fundo: ativado por checkbox. Quando ativo, default preto 50% transparência.
+    use_back_box = bool(bg_enabled)
+    if use_back_box:
+        try:
+            bg_opct = float(bg_opacity) if bg_opacity is not None else 50
+        except (TypeError, ValueError):
+            bg_opct = 50
+        bg_opct = max(0, min(100, bg_opct))
+        back_alpha = int(bg_opct * 255 / 100)
+    else:
+        back_alpha = 255
+    br, bg, bb = _hex_to_rgb(bg_color) if bg_color else (0, 0, 0)
+
+    tr, tg, tb = _hex_to_rgb(text_color) if text_color else (255, 255, 255)
+    or_, og, ob = _hex_to_rgb(outline_color) if outline_color else (0, 0, 0)
+
+    # Traço (borda): sempre BorderStyle=1 para outline consistente; outline_width e outline_color no estilo e nos overrides
+    outline_w = float(outline_width) if outline_width is not None else 1.5
+    BORDER_NORMAL = outline_w
+    BORDER_HIGHLIGHT = float(highlight_width)
+    BLUR_HIGHLIGHT = 2.0
+
     # Estilo Base
     style = pysubs2.SSAStyle()
     style.fontname = font_name
     style.fontsize = font_size
-    style.bold = True
-    style.primarycolor = pysubs2.Color(255, 255, 255)
-    style.outlinecolor = pysubs2.Color(0, 0, 0)
-    style.outline = 1.0
-    style.shadow = 0
+    style.bold = (font_weight == "bold")
+    style.italic = (font_weight == "italic")
+    style.primarycolor = pysubs2.Color(tr, tg, tb, primary_alpha)
+    style.outlinecolor = pysubs2.Color(or_, og, ob, 0)
+    style.outline = outline_w
     style.alignment = 2   # centro inferior
     style.marginv = 95
+    style.borderstyle = 1   # sempre 1 para traço (borda) funcionar corretamente
+    style.shadow = 4 if use_back_box else 0
+    style.backcolor = pysubs2.Color(br, bg, bb, back_alpha) if use_back_box else pysubs2.Color(0, 0, 0, 255)
+    if use_back_box:
+        style.borderstyle = 3   # caixa atrás do texto
+        style.shadow = 4
 
     subs.styles["Default"] = style
 
     def sec_to_ms(t):
         return int(t * 1000)
 
-    BORDER_NORMAL = float(outline_width)
+    BORDER_NORMAL = outline_w
     BORDER_HIGHLIGHT = float(highlight_width)
     BLUR_HIGHLIGHT = 2.0
     
+    # Traço (borda) aplicado explicitamente nos overrides para funcionar em todos os modelos
+    TRACO_TAG = rf"{{\bord{BORDER_NORMAL}}}{{\3c{BLACK_COLOR}}}{{\blur0}}"
     HIGHLIGHT_TAG = rf"{{\1c{WHITE_COLOR}}}{{\3c{HIGHLIGHT_COLOR}}}{{\bord{BORDER_HIGHLIGHT}}}{{\blur{BLUR_HIGHLIGHT}}}"
     NORMAL_TAG = rf"{{\1c{WHITE_COLOR}}}{{\3c{BLACK_COLOR}}}{{\bord{BORDER_NORMAL}}}{{\blur0}}"
+    # Legenda 2: palavra atual na cor "Destaque da fonte" (só cor do texto, sem borda grossa)
+    HIGHLIGHT_COLOR_TEXT_TAG = rf"{{\1c{HIGHLIGHT_COLOR}}}"
+
+    def add_pos(text, x_pct, y_pct):
+        if sub_x_percent is not None and sub_y_percent is not None:
+            pos_x = int((float(x_pct) / 100.0) * play_res_x)
+            pos_y = int((float(y_pct) / 100.0) * play_res_y)
+            return f"{{\\pos({pos_x},{pos_y})}}" + text
+        return text
+
+    def apply_case(s, case):
+        if case == "TT":
+            return s.upper()
+        if case == "tt":
+            return s.lower()
+        return s.title() if s else s
 
     # ITERA SOBRE OS SEGMENTOS (RESPEITANDO A EDIÇÃO)
     for seg in segments:
-        # Se tiver palavras com timestamps, usa. Se não, interpola.
         seg_words = seg.get("words", [])
         if not seg_words:
             seg_words = interpolate_words(seg["text"], seg["start"], seg["end"])
-            
         if not seg_words:
             continue
 
-        # Texto base deste segmento (para exibir o contexto da frase)
-        chunk_texts = [w["word"].strip().upper() for w in seg_words]
-        
-        # Gera eventos de destaque (karaokê) DENTRO do tempo deste segmento
-        for j, word_obj in enumerate(seg_words):
-            w_start = sec_to_ms(word_obj["start"])
-            w_end = sec_to_ms(word_obj["end"])
-            
-            # Garante que não ultrapasse o tempo do segmento pai
-            # (Útil se a interpolação ou o whisper derem timestamps zoados)
-            seg_end_ms = sec_to_ms(seg["end"])
-            if w_end > seg_end_ms:
-                w_end = seg_end_ms
-            
-            # Monta o texto visual
-            display_parts = []
-            for k, text_part in enumerate(chunk_texts):
-                if k == j:
-                    display_parts.append(f"{HIGHLIGHT_TAG}{text_part}{NORMAL_TAG}")
-                else:
-                    display_parts.append(text_part)
-            
-            final_text = " ".join(display_parts)
+        raw_words = [w["word"].strip() for w in seg_words]
+        chunk_texts = [apply_case(w, font_case) for w in raw_words]
+        seg_start_ms = sec_to_ms(seg["start"])
+        seg_end_ms = sec_to_ms(seg["end"])
 
-            # Posição customizada: \pos(x,y) em pixels (resolução do script)
-            if sub_x_percent is not None and sub_y_percent is not None:
-                pos_x = int((float(sub_x_percent) / 100.0) * play_res_x)
-                pos_y = int((float(sub_y_percent) / 100.0) * play_res_y)
-                final_text = f"{{\\pos({pos_x},{pos_y})}}" + final_text
-
-            # Ajuste para evitar flicker entre palavras
-            # Se não for a última palavra, estica até a próxima
-            if j < len(seg_words) - 1:
-                next_start = sec_to_ms(seg_words[j + 1]["start"])
-                if next_start - w_end < 500: # Se o gap for pequeno
-                    w_end = next_start
-            
-            # Cria o evento
-            event = pysubs2.SSAEvent(start=w_start, end=w_end, text=final_text, style="Default")
+        if subtitle_model == "traditional":
+            # Padrão: uma linha por segmento, sem nenhum highlight; traço explícito no override
+            plain_text = " ".join(chunk_texts)
+            final_text = add_pos(TRACO_TAG + plain_text, sub_x_percent, sub_y_percent)
+            event = pysubs2.SSAEvent(start=seg_start_ms, end=seg_end_ms, text=final_text, style="Default")
             subs.events.append(event)
+
+        elif subtitle_model == "highlights2":
+            # Legenda 2: cada palavra falada na cor "Destaque da fonte" (Estilos), timing palavra a palavra
+            for j, word_obj in enumerate(seg_words):
+                w_start = sec_to_ms(word_obj["start"])
+                w_end = sec_to_ms(word_obj["end"])
+                if w_end > seg_end_ms:
+                    w_end = seg_end_ms
+                display_parts = []
+                for k, text_part in enumerate(chunk_texts):
+                    if k == j:
+                        display_parts.append(f"{HIGHLIGHT_COLOR_TEXT_TAG}{text_part}{NORMAL_TAG}")
+                    else:
+                        display_parts.append(text_part)
+                final_text = " ".join(display_parts)
+                final_text = add_pos(final_text, sub_x_percent, sub_y_percent)
+                if j < len(seg_words) - 1:
+                    next_start = sec_to_ms(seg_words[j + 1]["start"])
+                    if next_start - w_end < 500:
+                        w_end = next_start
+                event = pysubs2.SSAEvent(start=w_start, end=w_end, text=final_text, style="Default")
+                subs.events.append(event)
+
+        else:
+            # highlights (Legenda 1): karaokê palavra a palavra
+            for j, word_obj in enumerate(seg_words):
+                w_start = sec_to_ms(word_obj["start"])
+                w_end = sec_to_ms(word_obj["end"])
+                if w_end > seg_end_ms:
+                    w_end = seg_end_ms
+                display_parts = []
+                for k, text_part in enumerate(chunk_texts):
+                    if k == j:
+                        display_parts.append(f"{HIGHLIGHT_TAG}{text_part}{NORMAL_TAG}")
+                    else:
+                        display_parts.append(text_part)
+                final_text = " ".join(display_parts)
+                final_text = add_pos(final_text, sub_x_percent, sub_y_percent)
+                if j < len(seg_words) - 1:
+                    next_start = sec_to_ms(seg_words[j + 1]["start"])
+                    if next_start - w_end < 500:
+                        w_end = next_start
+                event = pysubs2.SSAEvent(start=w_start, end=w_end, text=final_text, style="Default")
+                subs.events.append(event)
 
     subs.save(ass_path)
     print("Legenda .ass criada.")
@@ -279,8 +355,10 @@ def regroup_words_into_segments(words, max_chars=80, max_duration=7.0, min_gap=0
 
     return segments
 
-def processar_legenda_completo(video_path, output_path, model_name="small", language="pt", gemini_key=None, 
+def processar_legenda_completo(video_path, output_path, model_name="small", language="pt", gemini_key=None,
                                highlight_color=None, text_color=None, outline_color=None, highlight_width=5.0, outline_width=1.5, font_name="Prohibition", font_size=10,
+                               subtitle_model="highlights", sub_x_percent=None, sub_y_percent=None, play_res_x=640, play_res_y=360,
+                               font_opacity=100, font_weight="bold", font_case="Tt", bg_enabled=False, bg_color=None, bg_opacity=50,
                                only_generate=False):
     """
     Pipeline completo: Transcrever -> (Corrigir IA) -> Gerar ASS -> Queimar
@@ -327,7 +405,9 @@ def processar_legenda_completo(video_path, output_path, model_name="small", lang
     salvar_segmentos_json(segments, json_path)
 
     # 3. Gerar ASS
-    gerar_ass_capcut(segments, ass_path, highlight_color, text_color, outline_color, highlight_width, outline_width, font_name, font_size)
+    gerar_ass_capcut(segments, ass_path, highlight_color, text_color, outline_color, highlight_width, outline_width, font_name, font_size,
+                     sub_x_percent=sub_x_percent, sub_y_percent=sub_y_percent, play_res_x=play_res_x, play_res_y=play_res_y, subtitle_model=subtitle_model,
+                     font_opacity=font_opacity, font_weight=font_weight, font_case=font_case, bg_enabled=bg_enabled, bg_color=bg_color, bg_opacity=bg_opacity)
     
     if only_generate:
         print("Apenas geração solicitada. Parando antes de queimar.")

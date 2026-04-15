@@ -2195,6 +2195,26 @@
             display: flex !important;
             flex-direction: column !important;
         }
+        /* Cabeçalho: abas à esquerda, "Configurar Legendas" à direita */
+        #subtitleConfigModal .subtitle-config-header-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            flex-shrink: 0;
+            margin-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 12px;
+        }
+        #subtitleConfigModal .subtitle-config-header-row .subtitle-config-tabs {
+            margin-bottom: 0;
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+        #subtitleConfigModal .subtitle-config-title {
+            margin: 0;
+            font-size: 20px;
+        }
         #subtitleConfigModal .subtitle-config-two-col-row {
             display: flex !important;
             flex-direction: row-reverse !important;
@@ -2221,17 +2241,19 @@
             border-radius: 8px;
             overflow: hidden;
         }
+        #subtitleConfigModal .subtitle-config-body {
+            overflow: hidden;
+        }
         #subtitleConfigModal .modal-actions {
             flex-shrink: 0;
             margin-top: auto;
             width: 100%;
-            padding: 12px 0 4px 0;
+            padding: 14px 0 6px 0;
             border-top: 2px solid var(--border-color);
-            order: 999;
         }
         #subtitleConfigModal .modal {
-            padding-bottom: 20px;
-            min-height: 70vh;
+            padding-bottom: 16px;
+            min-height: 75vh;
         }
 
         /* Subtitle config modal tabs */
@@ -2266,6 +2288,160 @@
         }
         .subtitle-config-tab-content.active {
             display: block;
+        }
+
+        /* Aba Modelos: Favoritos + cards */
+        .subtitle-modelos-favoritos {
+            display: flex; align-items: center; gap: 6px;
+            font-size: 12px; color: var(--text-secondary);
+            margin-bottom: 12px;
+        }
+        .subtitle-model-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 12px;
+        }
+        .subtitle-model-card {
+            position: relative;
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            padding: 14px 10px;
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+            min-height: 90px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .subtitle-model-card:hover {
+            border-color: var(--accent-cyan);
+            background: rgba(0, 200, 255, 0.06);
+        }
+        .subtitle-model-card.selected {
+            border-color: var(--accent-cyan);
+            background: rgba(0, 200, 255, 0.1);
+        }
+        .subtitle-model-card .card-preview-text {
+            font-size: 11px;
+            font-weight: 700;
+            text-align: center;
+            letter-spacing: 0.02em;
+            line-height: 1.3;
+            margin-bottom: 8px;
+        }
+        .subtitle-model-card .card-preview-traditional {
+            color: var(--text-primary);
+        }
+        .subtitle-model-card .card-preview-highlights {
+            color: var(--text-primary);
+        }
+        .subtitle-model-card .card-preview-highlights .card-highlight-word {
+            color: var(--accent-cyan);
+        }
+        .subtitle-model-card .card-preview-highlights2 {
+            color: var(--text-primary);
+        }
+        .subtitle-model-card .card-preview-highlights2 .card-word-destaque {
+            color: var(--accent-cyan);
+        }
+        .subtitle-model-card .card-label {
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+        .subtitle-model-card .card-fav {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            background: none;
+            cursor: pointer;
+            color: var(--text-secondary);
+            padding: 0;
+            border-radius: 4px;
+        }
+        .subtitle-model-card .card-fav:hover {
+            color: #f0b429;
+        }
+        .subtitle-model-card .card-fav.favorited {
+            color: #f0b429;
+        }
+
+        /* Aba Posição: canvas com referências (bordas redes sociais + cruz central) */
+        .subtitle-position-stage {
+            aspect-ratio: 16/9;
+            max-height: 220px;
+            background: #0d0d0d;
+            border-radius: 12px;
+            position: relative;
+            cursor: crosshair;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+        }
+        .subtitle-position-frame {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border: 1px solid rgba(255,255,255,0.5);
+            border-radius: 8px;
+            pointer-events: none;
+        }
+        .subtitle-position-frame-outer {
+            width: 92%;
+            height: 92%;
+        }
+        .subtitle-position-frame-inner {
+            width: 82%;
+            height: 82%;
+            border-color: rgba(255,255,255,0.25);
+        }
+        .subtitle-position-crosshair {
+            position: absolute;
+            background: none;
+            border: none;
+            border-top: 1px dashed rgba(220, 60, 60, 0.9);
+            pointer-events: none;
+        }
+        .subtitle-position-crosshair-v {
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 0;
+            border-top: none;
+            border-left: 1px dashed rgba(220, 60, 60, 0.9);
+            transform: translateX(-50%);
+        }
+        .subtitle-position-crosshair-h {
+            left: 0;
+            right: 0;
+            top: 50%;
+            height: 0;
+            transform: translateY(-50%);
+        }
+        .subtitle-position-mock {
+            position: absolute;
+            padding: 6px 12px;
+            background: rgba(0,0,0,0.75);
+            color: #fff;
+            font-size: 14px;
+            font-weight: 700;
+            white-space: nowrap;
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 4px;
+            cursor: grab;
+            user-select: none;
+            pointer-events: auto;
+            letter-spacing: 0.02em;
+        }
+        .subtitle-position-mock:active {
+            cursor: grabbing;
         }
 
         .modal-btn.cancel {
@@ -2814,8 +2990,18 @@
     <!-- Modal Configuração Legendas: esquerda = opções, direita = preview -->
     <div class="modal-overlay" id="subtitleConfigModal">
         <div class="modal subtitle-config-modal-two-col" style="max-width: 960px; width: 95%; max-height: 90vh; display: flex; flex-direction: column;">
-            <h3><i data-lucide="palette" class="lucide-md"></i> Configurar Legendas</h3>
+            <!-- Cabeçalho: abas à esquerda, título à direita -->
+            <div class="subtitle-config-header-row">
+                <div class="subtitle-config-tabs">
+                    <button type="button" class="tab-btn active" data-tab="modelos">Modelos</button>
+                    <button type="button" class="tab-btn" data-tab="fonte">Fonte</button>
+                    <button type="button" class="tab-btn" data-tab="estilos">Estilos</button>
+                    <button type="button" class="tab-btn" data-tab="posicao">Posição</button>
+                </div>
+                <h3 class="subtitle-config-title"><i data-lucide="palette" class="lucide-md"></i> Configurar Legendas</h3>
+            </div>
 
+            <div class="subtitle-config-body" style="flex: 1; min-height: 0; display: flex; flex-direction: column;">
             <div class="subtitle-config-two-col-row" id="subtitleConfigTwoColRow">
                 <!-- Coluna direita (ordem visual): preview -->
                 <div id="subtitlePreviewCol" class="subtitle-config-right-col subtitle-config-preview-col">
@@ -2844,28 +3030,34 @@
                         </div>
                     </div>
                 </div>
-                <!-- Coluna esquerda (ordem visual): abas e opções -->
+                <!-- Coluna esquerda (ordem visual): opções (abas já estão no cabeçalho) -->
                 <div class="subtitle-config-left-col">
-                    <div class="subtitle-config-tabs">
-                        <button type="button" class="tab-btn active" data-tab="modelos">Modelos</button>
-                        <button type="button" class="tab-btn" data-tab="fonte">Fonte</button>
-                        <button type="button" class="tab-btn" data-tab="estilos">Estilos</button>
-                        <button type="button" class="tab-btn" data-tab="posicao">Posição</button>
-                    </div>
                     <div id="subtitleConfigScroll" style="flex: 1; overflow-y: auto; padding-right: 6px; padding-bottom: 8px; min-height: 0;">
-                <!-- Aba 1: Modelos -->
+                <!-- Aba 1: Modelos (cards clicáveis + favoritar) -->
                 <div id="tab-modelos" class="subtitle-config-tab-content active">
-                    <div style="margin-bottom: 12px;">
-                        <label style="display: flex; align-items: center; gap: 10px; padding: 12px; background: var(--bg-secondary); border-radius: 8px; cursor: pointer; border: 1px solid var(--border-color);">
-                            <input type="radio" name="subTitleModel" id="subTitleModelTraditional" value="traditional" checked>
-                            <span style="font-size: 13px;">Legenda tradicional (sem destaques)</span>
-                        </label>
+                    <div class="subtitle-modelos-favoritos">
+                        <i data-lucide="star" class="lucide-sm" style="color: #f0b429;"></i>
+                        <span>Favoritos</span>
                     </div>
-                    <div style="margin-bottom: 12px;">
-                        <label style="display: flex; align-items: center; gap: 10px; padding: 12px; background: var(--bg-secondary); border-radius: 8px; cursor: pointer; border: 1px solid var(--border-color);">
-                            <input type="radio" name="subTitleModel" id="subTitleModelHighlights" value="highlights">
-                            <span style="font-size: 13px;">Legenda com destaques</span>
-                        </label>
+                    <input type="radio" name="subTitleModel" id="subTitleModelTraditional" value="traditional" style="position: absolute; opacity: 0; pointer-events: none;">
+                    <input type="radio" name="subTitleModel" id="subTitleModelHighlights" value="highlights" checked style="position: absolute; opacity: 0; pointer-events: none;">
+                    <input type="radio" name="subTitleModel" id="subTitleModelLegenda2" value="highlights2" style="position: absolute; opacity: 0; pointer-events: none;">
+                    <div class="subtitle-model-cards" id="subtitleModelCards">
+                        <div class="subtitle-model-card" data-model="traditional" title="Clique para selecionar">
+                            <button type="button" class="card-fav" data-model="traditional" title="Favoritar" aria-label="Favoritar"><i data-lucide="star" class="lucide-sm"></i></button>
+                            <div class="card-preview-text card-preview-traditional">THIS IS A SUBTITLE</div>
+                            <span class="card-label">Padrão</span>
+                        </div>
+                        <div class="subtitle-model-card selected" data-model="highlights" title="Clique para selecionar">
+                            <button type="button" class="card-fav" data-model="highlights" title="Favoritar" aria-label="Favoritar"><i data-lucide="star" class="lucide-sm"></i></button>
+                            <div class="card-preview-text card-preview-highlights">THIS IS A <span class="card-highlight-word">SUBTITLE</span></div>
+                            <span class="card-label">Legenda 1</span>
+                        </div>
+                        <div class="subtitle-model-card" data-model="highlights2" title="Clique para selecionar">
+                            <button type="button" class="card-fav" data-model="highlights2" title="Favoritar" aria-label="Favoritar"><i data-lucide="star" class="lucide-sm"></i></button>
+                            <div class="card-preview-text card-preview-highlights2">THIS IS A <span class="card-word-destaque">SUBTITLE</span></div>
+                            <span class="card-label">Legenda 2</span>
+                        </div>
                     </div>
                 </div>
 
@@ -2961,10 +3153,16 @@
                             </div>
                         </div>
                     </div>
-                    <!-- 3.3 Plano de fundo -->
+                    <!-- 3.3 Plano de fundo (quick box: ativar/desativar; padrão desativado; quando ativo: preto 50%) -->
                     <div style="margin-bottom: 16px;">
                         <label style="font-size: 12px; color: var(--text-secondary); font-weight: 600;">Plano de fundo</label>
-                        <div style="display: flex; gap: 12px; align-items: center; margin-top: 8px; flex-wrap: wrap;">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-top: 8px; flex-wrap: wrap;">
+                            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                                <input type="checkbox" id="subBgEnabled" style="width: 18px; height: 18px;">
+                                <span style="font-size: 12px; color: var(--text-primary);">Ativar plano de fundo</span>
+                            </label>
+                        </div>
+                        <div id="subBgOptions" style="display: none; gap: 12px; align-items: center; margin-top: 8px; flex-wrap: wrap;">
                             <div style="display: flex; align-items: center; gap: 6px;">
                                 <label style="font-size: 11px; color: var(--text-secondary);">Cor</label>
                                 <input type="color" id="subBgColor" value="#000000" style="width: 36px; height: 28px; border: none; padding: 0; background: none; cursor: pointer;">
@@ -2973,8 +3171,8 @@
                             <div style="flex: 1; min-width: 100px;">
                                 <label style="font-size: 11px; color: var(--text-secondary);">Transparência</label>
                                 <div style="display: flex; align-items: center; gap: 4px;">
-                                    <input type="range" id="subBgOpacityRange" min="0" max="100" step="5" value="0" style="flex: 1;">
-                                    <span id="subBgOpacityValue" style="font-size: 11px; font-family: monospace;">0%</span>
+                                    <input type="range" id="subBgOpacityRange" min="0" max="100" step="5" value="50" style="flex: 1;">
+                                    <span id="subBgOpacityValue" style="font-size: 11px; font-family: monospace;">50%</span>
                                 </div>
                             </div>
                         </div>
@@ -2997,34 +3195,39 @@
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    <!-- Aba 4: Posição -->
-                    <div id="tab-posicao" class="subtitle-config-tab-content">
-                        <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 10px;">Arraste o mock da legenda para definir a posição. O preview à direita atualiza em tempo real.</p>
-                        <div id="subtitlePositionStage" style="aspect-ratio: 16/9; max-height: 200px; background: #111; border-radius: 8px; position: relative; cursor: crosshair; border: 1px solid var(--border-color);">
-                            <div id="subtitlePositionMock" style="position: absolute; padding: 6px 12px; background: rgba(0,0,0,0.75); color: #fff; font-size: 14px; white-space: nowrap; border: 1px solid rgba(255,255,255,0.3); border-radius: 4px; cursor: grab; user-select: none; pointer-events: auto;">PREVIEW DA LEGENDA</div>
-                        </div>
-                        <input type="hidden" id="subPosX" value="50">
-                        <input type="hidden" id="subPosY" value="92">
-                        <div style="display: flex; align-items: center; gap: 12px; margin-top: 10px; flex-wrap: wrap;">
-                            <span style="font-size: 12px; color: var(--text-secondary);">X: <strong id="subtitlePosXVal">50</strong>%</span>
-                            <span style="font-size: 12px; color: var(--text-secondary);">Y: <strong id="subtitlePosYVal">92</strong>%</span>
-                            <button type="button" class="modal-btn" id="subtitlePositionDefaultBtn" style="background: var(--bg-secondary); border: 1px solid var(--border-color); color: var(--text-primary); padding: 6px 12px; font-size: 12px;">Default</button>
-                        </div>
+                <!-- Aba 4: Posição (referências para bordas redes sociais + arrastar legenda) -->
+                <div id="tab-posicao" class="subtitle-config-tab-content">
+                    <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 10px;">Arraste a legenda para definir a posição. O preview e o vídeo final usam essa posição. As linhas são referências para manter a legenda dentro das bordas seguras das redes sociais.</p>
+                    <div id="subtitlePositionStage" class="subtitle-position-stage">
+                        <div class="subtitle-position-frame subtitle-position-frame-outer"></div>
+                        <div class="subtitle-position-frame subtitle-position-frame-inner"></div>
+                        <div class="subtitle-position-crosshair subtitle-position-crosshair-v"></div>
+                        <div class="subtitle-position-crosshair subtitle-position-crosshair-h"></div>
+                        <div id="subtitlePositionMock" class="subtitle-position-mock">THIS IS A SUBTITLE</div>
+                    </div>
+                    <input type="hidden" id="subPosX" value="50">
+                    <input type="hidden" id="subPosY" value="92">
+                    <div style="display: flex; align-items: center; gap: 12px; margin-top: 10px; flex-wrap: wrap;">
+                        <span style="font-size: 12px; color: var(--text-secondary);">X: <strong id="subtitlePosXVal">50</strong>%</span>
+                        <span style="font-size: 12px; color: var(--text-secondary);">Y: <strong id="subtitlePosYVal">92</strong>%</span>
+                        <button type="button" class="modal-btn" id="subtitlePositionDefaultBtn" style="background: var(--bg-secondary); border: 1px solid var(--border-color); color: var(--text-primary); padding: 6px 12px; font-size: 12px;">Default</button>
                     </div>
                 </div>
                 </div>
             </div>
+            </div>
 
-            <!-- Rodapé fixo: botões Preview e Cancelar sempre embaixo -->
-            <div class="modal-actions subtitle-config-footer" style="justify-content: space-between; width: 100%; flex-shrink: 0; background: var(--bg-primary);">
+            <!-- Rodapé: Preview e Cancelar à esquerda, checkbox à direita (como na referência) -->
+            <div class="modal-actions subtitle-config-footer" style="justify-content: space-between; align-items: center; width: 100%; flex-shrink: 0; padding: 12px 0 8px 0; background: var(--bg-primary);">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <button class="modal-btn" onclick="updateSubtitlePreview()" style="background: var(--bg-secondary); border: 1px solid var(--border-color); color: var(--text-primary);"><i data-lucide="refresh-cw" class="lucide-sm" style="margin-right: 6px;"></i> Preview</button>
+                    <button class="modal-btn cancel" onclick="hideSubtitleConfigModal()">Cancelar</button>
+                </div>
                 <div style="display: flex; align-items: center; gap: 8px;">
                     <input type="checkbox" id="previewModeCheckbox" checked>
                     <label for="previewModeCheckbox" style="font-size: 13px; color: var(--text-primary); cursor: pointer;">Editar antes de queimar</label>
-                </div>
-                <div style="display: flex; gap: 8px;">
-                    <button class="modal-btn" onclick="updateSubtitlePreview()" style="background: var(--bg-secondary); border: 1px solid var(--border-color); color: var(--text-primary);"><i data-lucide="refresh-cw" class="lucide-sm" style="margin-right: 6px;"></i> Preview</button>
-                    <button class="modal-btn cancel" onclick="hideSubtitleConfigModal()">Cancelar</button>
                 </div>
             </div>
         </div>
@@ -3291,6 +3494,11 @@
             updateButtons();
             hideProcessingOverlay();
             if (data.success) {
+                if (data.selected_video || data.output) {
+                    selectedVideo = data.selected_video || data.output;
+                    updateSelectedVideo(selectedVideo.split('/').pop());
+                    updateExplorerSelection && updateExplorerSelection();
+                }
                 showNotification('Processo Concluído!', `Arquivo salvo: ${data.filename}`, 'success');
                 loadVideoList();
             } else {
@@ -4852,6 +5060,15 @@
                 fontOpacityRange.oninput = (e) => { fontOpacityVal.textContent = e.target.value + '%'; debouncedUpdatePreview(); };
                 fontOpacityVal.textContent = fontOpacityRange.value + '%';
             }
+            const subBgEnabled = document.getElementById('subBgEnabled');
+            const subBgOptions = document.getElementById('subBgOptions');
+            if (subBgEnabled && subBgOptions) {
+                subBgEnabled.onchange = () => {
+                    subBgOptions.style.display = subBgEnabled.checked ? 'flex' : 'none';
+                    debouncedUpdatePreview();
+                };
+                subBgOptions.style.display = subBgEnabled.checked ? 'flex' : 'none';
+            }
             const subBgOpacityRange = document.getElementById('subBgOpacityRange');
             const subBgOpacityVal = document.getElementById('subBgOpacityValue');
             if (subBgOpacityRange && subBgOpacityVal) {
@@ -4868,6 +5085,9 @@
             document.querySelectorAll('input[name="subTitleModel"]').forEach(r => {
                 r.onchange = () => debouncedUpdatePreview();
             });
+
+            // Aba Modelos: cards clicáveis + favoritar
+            initSubtitleModelCards();
 
             const customFontUpload = document.getElementById('customFontUpload');
             if (customFontUpload) {
@@ -5101,7 +5321,16 @@
                 highlight_width: settings.highlight_width,
                 outline_width: settings.outline_width,
                 font_name: settings.font_name,
-                font_size: settings.font_size
+                font_size: settings.font_size,
+                subtitle_model: settings.subtitle_model,
+                sub_x_percent: settings.sub_x_percent,
+                sub_y_percent: settings.sub_y_percent,
+                font_opacity: settings.font_opacity,
+                font_weight: settings.font_weight,
+                font_case: settings.font_case,
+                bg_enabled: settings.bg_enabled,
+                bg_color: settings.bg_color,
+                bg_opacity: settings.bg_opacity
             };
 
             if (!silent) showProcessingOverlay('Salvando', 'Atualizando legendas...');
@@ -5215,6 +5444,70 @@
             mock.style.transform = 'translate(-50%, -100%)';
         }
 
+        const SUBTITLE_FAVORITES_KEY = 'subtitleModelFavorites';
+        function getSubtitleModelFavorites() {
+            try {
+                const raw = localStorage.getItem(SUBTITLE_FAVORITES_KEY);
+                if (raw) return JSON.parse(raw);
+                return ['highlights'];
+            } catch (e) { return ['highlights']; }
+        }
+        function setSubtitleModelFavorites(arr) {
+            try {
+                localStorage.setItem(SUBTITLE_FAVORITES_KEY, JSON.stringify(arr));
+            } catch (e) {}
+        }
+
+        function initSubtitleModelCards() {
+            const container = document.getElementById('subtitleModelCards');
+            if (!container) return;
+            const favorites = getSubtitleModelFavorites();
+
+            function syncSelectedFromRadio() {
+                const checked = document.querySelector('input[name="subTitleModel"]:checked');
+                const model = checked ? checked.value : 'traditional';
+                container.querySelectorAll('.subtitle-model-card').forEach(card => {
+                    card.classList.toggle('selected', card.getAttribute('data-model') === model);
+                });
+            }
+            function syncFavoritesUI() {
+                const favs = getSubtitleModelFavorites();
+                container.querySelectorAll('.card-fav').forEach(btn => {
+                    const model = btn.getAttribute('data-model');
+                    btn.classList.toggle('favorited', favs.includes(model));
+                    btn.title = favs.includes(model) ? 'Desfavoritar' : 'Favoritar';
+                });
+            }
+
+            syncSelectedFromRadio();
+            syncFavoritesUI();
+
+            container.onclick = (e) => {
+                const card = e.target.closest('.subtitle-model-card');
+                const favBtn = e.target.closest('.card-fav');
+                if (favBtn && card) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const model = favBtn.getAttribute('data-model');
+                    let favs = getSubtitleModelFavorites();
+                    if (favs.includes(model)) favs = favs.filter(m => m !== model);
+                    else favs = favs.concat(model);
+                    setSubtitleModelFavorites(favs);
+                    syncFavoritesUI();
+                    return;
+                }
+                if (card) {
+                    const model = card.getAttribute('data-model');
+                    const radio = document.querySelector(`input[name="subTitleModel"][value="${model}"]`);
+                    if (radio) {
+                        radio.checked = true;
+                        syncSelectedFromRadio();
+                        debouncedUpdatePreview();
+                    }
+                }
+            };
+        }
+
         function initSubtitlePositionDrag() {
             const mock = document.getElementById('subtitlePositionMock');
             const stage = document.getElementById('subtitlePositionStage');
@@ -5278,6 +5571,15 @@
             const subPosYEl = document.getElementById('subPosY');
             const sub_x = subPosXEl ? parseFloat(subPosXEl.value) || 50 : 50;
             const sub_y = subPosYEl ? parseFloat(subPosYEl.value) || 92 : 92;
+            const modelRadios = document.querySelectorAll('input[name="subTitleModel"]');
+            let subtitle_model = 'highlights';
+            modelRadios.forEach(r => { if (r.checked) subtitle_model = r.value; });
+            const fontOpacity = document.getElementById('fontOpacityRange') && document.getElementById('fontOpacityRange').value;
+            const fontWeight = (document.getElementById('fontWeightSelect') && document.getElementById('fontWeightSelect').value) || 'bold';
+            const fontCase = (document.getElementById('fontCaseSelect') && document.getElementById('fontCaseSelect').value) || 'Tt';
+            const bgEnabled = document.getElementById('subBgEnabled') && document.getElementById('subBgEnabled').checked;
+            const bgColor = document.getElementById('subBgColor') && document.getElementById('subBgColor').value;
+            const bgOpacity = document.getElementById('subBgOpacityRange') && document.getElementById('subBgOpacityRange').value;
             const body = {
                 highlight_color: highlight,
                 text_color: text,
@@ -5288,7 +5590,14 @@
                 font_size: fontSize,
                 video_path: videoPath,
                 sub_x_percent: sub_x,
-                sub_y_percent: sub_y
+                sub_y_percent: sub_y,
+                subtitle_model: subtitle_model,
+                font_opacity: fontOpacity,
+                font_weight: fontWeight,
+                font_case: fontCase,
+                bg_enabled: bgEnabled,
+                bg_color: bgColor,
+                bg_opacity: bgOpacity
             };
             
             fetch('/api/process/preview_subtitle', {
@@ -5403,8 +5712,9 @@
             const fontOpacity = get('fontOpacityRange', '100');
             const fontWeight = (document.getElementById('fontWeightSelect') && document.getElementById('fontWeightSelect').value) || 'normal';
             const fontCase = (document.getElementById('fontCaseSelect') && document.getElementById('fontCaseSelect').value) || 'Tt';
+            const bgEnabled = document.getElementById('subBgEnabled') ? document.getElementById('subBgEnabled').checked : false;
             const bgColor = get('subBgColor', '#000000');
-            const bgOpacity = get('subBgOpacityRange', '0');
+            const bgOpacity = get('subBgOpacityRange', '50');
             const customFontEl = document.getElementById('customFontUpload');
             const custom_font_name = (customFontEl && customFontEl.files && customFontEl.files[0]) ? customFontEl.files[0].name : null;
             const subPosXEl = document.getElementById('subPosX');
@@ -5433,6 +5743,7 @@
                 font_opacity: fontOpacity,
                 font_weight: fontWeight,
                 font_case: fontCase,
+                bg_enabled: bgEnabled,
                 bg_color: bgColor,
                 bg_opacity: bgOpacity,
                 custom_font_name: custom_font_name,
